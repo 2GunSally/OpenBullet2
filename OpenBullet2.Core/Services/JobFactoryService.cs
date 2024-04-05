@@ -35,7 +35,7 @@ namespace OpenBullet2.Core.Services
         /// <summary>
         /// The maximum amount of bots that a job can use.
         /// </summary>
-        public int BotLimit { get; init; } = 200;
+        public int BotLimit { get; init; } = 1000;
 
         public JobFactoryService(ConfigService configService, RuriLibSettingsService settingsService, PluginRepository pluginRepo,
             HitStorageService hitStorage, ProxySourceFactoryService proxySourceFactory, DataPoolFactoryService dataPoolFactory,
