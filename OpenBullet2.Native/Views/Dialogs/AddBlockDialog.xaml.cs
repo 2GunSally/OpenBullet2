@@ -48,8 +48,7 @@ namespace OpenBullet2.Native.Views.Dialogs
         private void SelectCategory(object sender, RoutedEventArgs e)
             => vm.SelectCategory((CategoryTreeNode)(sender as Button).Tag);
 
-        private void SelectDescriptor(object sender, RoutedEventArgs e) => SelectDescriptor(sender);
-        private void SelectDescriptor(object sender, MouseEventArgs e) => SelectDescriptor(sender);
+        private void SelectDescriptor(object sender, object _) => SelectDescriptor(sender);
         private void SelectDescriptor(object sender)
         {
             var descriptor = (BlockDescriptor)(sender as FrameworkElement).Tag;

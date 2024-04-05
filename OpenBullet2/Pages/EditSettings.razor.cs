@@ -63,7 +63,7 @@ namespace OpenBullet2.Pages
                 .Where(s => !quitBrowserStatuses.Contains(s)).ToList();
         }
 
-        void OnSelectionChanged(object value)
+        void OnSelectionChanged()
         {
             // HACK: Set all here since I don't want to make 1 method for each one
             settings.GeneralSettings.ContinueStatuses = continueStatuses.ToArray();

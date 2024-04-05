@@ -24,8 +24,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RuriLib.Proxies.Tests", "Ru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RuriLib.Http.Tests", "RuriLib.Http.Tests\RuriLib.Http.Tests.csproj", "{84E251A1-9F3E-45F7-AD66-AEB254093572}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Updater", "Updater\Updater.csproj", "{D82CA559-25C3-484F-8E18-22F0B2EC0322}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RuriLib.Parallelization", "RuriLib.Parallelization\RuriLib.Parallelization.csproj", "{C341976A-B669-40E8-A468-67518F381A0B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RuriLib.Parallelization.Tests", "RuriLib.Parallelization.Tests\RuriLib.Parallelization.Tests.csproj", "{09E3D17D-29BE-4C96-A504-92D9406B2E4D}"
@@ -33,8 +31,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBullet2.Core", "OpenBullet2.Core\OpenBullet2.Core.csproj", "{6D601FCE-D6E9-459B-96D8-27B998425950}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBullet2.Native", "OpenBullet2.Native\OpenBullet2.Native.csproj", "{AF4F29CC-3C09-45FE-9B25-2001694EDF34}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Updater.Native", "Updater.Native\Updater.Native.csproj", "{9D1622CE-8945-40D3-9C09-DA3C07F91F7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,10 +70,6 @@ Global
 		{84E251A1-9F3E-45F7-AD66-AEB254093572}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84E251A1-9F3E-45F7-AD66-AEB254093572}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84E251A1-9F3E-45F7-AD66-AEB254093572}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D82CA559-25C3-484F-8E18-22F0B2EC0322}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D82CA559-25C3-484F-8E18-22F0B2EC0322}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D82CA559-25C3-484F-8E18-22F0B2EC0322}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D82CA559-25C3-484F-8E18-22F0B2EC0322}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C341976A-B669-40E8-A468-67518F381A0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C341976A-B669-40E8-A468-67518F381A0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C341976A-B669-40E8-A468-67518F381A0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -94,10 +86,6 @@ Global
 		{AF4F29CC-3C09-45FE-9B25-2001694EDF34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF4F29CC-3C09-45FE-9B25-2001694EDF34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF4F29CC-3C09-45FE-9B25-2001694EDF34}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9D1622CE-8945-40D3-9C09-DA3C07F91F7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9D1622CE-8945-40D3-9C09-DA3C07F91F7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9D1622CE-8945-40D3-9C09-DA3C07F91F7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9D1622CE-8945-40D3-9C09-DA3C07F91F7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
