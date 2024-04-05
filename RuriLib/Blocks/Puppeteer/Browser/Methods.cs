@@ -191,13 +191,13 @@ namespace RuriLib.Blocks.Puppeteer.Browser
         private static PuppeteerSharp.Browser GetBrowser(BotData data)
             => data.TryGetObject<PuppeteerSharp.Browser>("puppeteer") ?? throw new Exception("The browser is not open!");
 
-        private static PuppeteerSharp.Page GetPage(BotData data)
+        private static IPage GetPage(BotData data)
             => data.TryGetObject<PuppeteerSharp.Page>("puppeteerPage") ?? throw new Exception("No pages open!");
 
         private static void SwitchToMainFramePrivate(BotData data)
             => data.SetObject("puppeteerFrame", GetPage(data).MainFrame);
 
-        private static void SetPageAndFrame(BotData data, PuppeteerSharp.Page page)
+        private static void SetPageAndFrame(BotData data, IPage page)
         {
             data.SetObject("puppeteerPage", page, false);
             SwitchToMainFramePrivate(data);
@@ -206,7 +206,7 @@ namespace RuriLib.Blocks.Puppeteer.Browser
         private static void StopYoveProxyInternalServer(BotData data)
             => data.TryGetObject<ProxyClient>("puppeteer.yoveproxy")?.Dispose();
 
-        private static async Task SetPageLoadingOptions(BotData data, PuppeteerSharp.Page page)
+        private static async Task SetPageLoadingOptions(BotData data, IPage page)
         {
             await page.SetRequestInterceptionAsync(true);
             page.Request += (sender, e) =>

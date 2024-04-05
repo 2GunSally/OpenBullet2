@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Collections.Generic;
 using RuriLib.Legacy.LS;
@@ -9,6 +8,7 @@ using RuriLib.Logging;
 using RuriLib.Functions.Http.Options;
 using RuriLib.Functions.Http;
 using RuriLib.Models.Variables;
+using System.Drawing;
 
 namespace RuriLib.Legacy.Blocks
 {
@@ -176,8 +176,13 @@ namespace RuriLib.Legacy.Blocks
 
             try
             {
-                var converter = new ImageConverter();
-                var bytes = (byte[])converter.ConvertTo(bitmap, typeof(byte[]));
+                byte[] bytes;
+                using (var stream = new MemoryStream())
+                {
+                    // Save the bitmap to the stream
+                    bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                    bytes = stream.ToArray();
+                }
 
                 var captchaResponse = await provider.SolveImageCaptchaAsync(Convert.ToBase64String(bytes));
                 response = captchaResponse.Response;

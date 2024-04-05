@@ -67,8 +67,7 @@ namespace OpenBullet2.Native.Views.Pages
         private void EnableDisableBlock(object sender, RoutedEventArgs e) => vm.EnableDisableSelected();
         private void Undo(object sender, RoutedEventArgs e) => vm.Undo();
 
-        private void SelectBlock(object sender, MouseEventArgs e) => SelectBlock(sender);
-        private void SelectBlock(object sender, RoutedEventArgs e) => SelectBlock(sender);
+        private void SelectBlock(object sender, object _) => SelectBlock(sender);
         private void SelectBlock(object sender)
         {
             var ctrl = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);

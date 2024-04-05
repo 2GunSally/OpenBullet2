@@ -1,5 +1,4 @@
-﻿using Blazor.FileReader;
-using Blazored.Modal;
+﻿using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -15,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Tewr.Blazor.FileReader;
 
 namespace OpenBullet2.Shared.Forms
 {

@@ -1,4 +1,3 @@
-using Blazor.FileReader;
 using Blazored.Modal;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -29,6 +28,7 @@ using OpenBullet2.Repositories;
 using OpenBullet2.Core.Helpers;
 using OpenBullet2.Helpers;
 using RuriLib.Helpers;
+using Tewr.Blazor.FileReader;
 
 namespace OpenBullet2
 {
