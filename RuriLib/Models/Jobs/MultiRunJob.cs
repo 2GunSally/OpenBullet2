@@ -1,37 +1,37 @@
+using IronPython.Compiler;
 using IronPython.Hosting;
+using IronPython.Runtime;
 using Microsoft.CodeAnalysis.Scripting;
+using RuriLib.Helpers;
 using RuriLib.Helpers.CSharp;
 using RuriLib.Helpers.Transpilers;
+using RuriLib.Legacy.LS;
+using RuriLib.Legacy.Models;
 using RuriLib.Logging;
 using RuriLib.Models.Bots;
+using RuriLib.Models.Captchas;
 using RuriLib.Models.Configs;
 using RuriLib.Models.Configs.Settings;
 using RuriLib.Models.Data;
+using RuriLib.Models.Data.Resources;
+using RuriLib.Models.Data.Resources.Options;
 using RuriLib.Models.Hits;
 using RuriLib.Models.Proxies;
-using RuriLib.Services;
+using RuriLib.Models.Variables;
 using RuriLib.Parallelization;
 using RuriLib.Parallelization.Models;
+using RuriLib.Services;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using RuriLib.Models.Data.Resources;
-using RuriLib.Models.Data.Resources.Options;
-using RuriLib.Helpers;
-using IronPython.Compiler;
-using IronPython.Runtime;
-using RuriLib.Models.Captchas;
-using RuriLib.Legacy.Models;
-using RuriLib.Legacy.LS;
-using RuriLib.Models.Variables;
 
 namespace RuriLib.Models.Jobs
 {
@@ -546,8 +546,8 @@ namespace RuriLib.Models.Jobs
                 }
 
                 Providers.Security.X509RevocationMode = Config.Mode == ConfigMode.DLL
-                    ? System.Security.Cryptography.X509Certificates.X509RevocationMode.Online
-                    : System.Security.Cryptography.X509Certificates.X509RevocationMode.NoCheck;
+                    ? X509RevocationMode.Online
+                    : X509RevocationMode.NoCheck;
 
                 var wordlistType = settings.Environment.WordlistTypes.FirstOrDefault(t => t.Name == DataPool.WordlistType);
                 globalVariables = new ExpandoObject();

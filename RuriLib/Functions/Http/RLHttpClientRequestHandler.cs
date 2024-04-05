@@ -1,4 +1,5 @@
 using RuriLib.Extensions;
+using RuriLib.Functions.Conversion;
 using RuriLib.Functions.Files;
 using RuriLib.Functions.Http.Options;
 using RuriLib.Helpers;
@@ -18,6 +19,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using HttpRequestOptions = RuriLib.Functions.Http.Options.HttpRequestOptions;
 
 namespace RuriLib.Functions.Http
 {
@@ -276,7 +278,7 @@ namespace RuriLib.Functions.Http
                         writer.WriteLine($"Content-Type: {x.Headers.ContentType}");
                         writer.WriteLine($"Content-Length: {x.Headers.ContentLength}");
                         writer.WriteLine();
-                        writer.WriteLine(RuriLib.Functions.Conversion.HexConverter.ToHexString(x.ReadAsByteArrayAsync().Result));
+                        writer.WriteLine(HexConverter.ToHexString(x.ReadAsByteArrayAsync().Result));
                         break;
 
                     case MultipartFormDataContent x:
@@ -306,7 +308,7 @@ namespace RuriLib.Functions.Http
         }
 
         private static async Task LogHttpResponseData(BotData data, HttpResponse response, HttpRequest request,
-            RuriLib.Functions.Http.Options.HttpRequestOptions requestOptions)
+            HttpRequestOptions requestOptions)
         {
             // Try to read the raw source for Content-Length calculation
             try

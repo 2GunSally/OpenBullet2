@@ -1,10 +1,10 @@
-﻿using System.Net.Sockets;
+﻿using RuriLib.Proxies.Clients;
+using RuriLib.Proxies.Exceptions;
+using System;
+using System.Net.Sockets;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
-using System;
-using RuriLib.Proxies.Exceptions;
-using RuriLib.Proxies.Clients;
-using System.Security;
 
 namespace RuriLib.Proxies
 {

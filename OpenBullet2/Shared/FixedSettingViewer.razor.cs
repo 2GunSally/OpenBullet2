@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using RuriLib.Extensions;
 using RuriLib.Models.Blocks.Settings;
 using RuriLib.Models.Blocks.Settings.Interpolated;
 using System.Linq;

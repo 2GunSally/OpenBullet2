@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
+using OpenBullet2.Auth;
 using OpenBullet2.Services;
 using System;
 using System.Net;
@@ -72,7 +73,7 @@ namespace OpenBullet2.Pages
 
         private async Task Logout()
         {
-            await ((Auth.OBAuthenticationStateProvider)Auth).Logout();
+            await ((OBAuthenticationStateProvider)Auth).Logout();
             Nav.NavigateTo("/", true);
         }
 

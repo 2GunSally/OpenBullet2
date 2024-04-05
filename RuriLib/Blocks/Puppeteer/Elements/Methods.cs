@@ -1,4 +1,5 @@
 ﻿using PuppeteerSharp;
+using PuppeteerSharp.Input;
 using RuriLib.Attributes;
 using RuriLib.Functions.Files;
 using RuriLib.Functions.Puppeteer;
@@ -37,7 +38,7 @@ namespace RuriLib.Blocks.Puppeteer.Elements
 
             var frame = GetFrame(data);
             var elem = await GetElement(frame, findBy, identifier, index);
-            await elem.TypeAsync(text, new PuppeteerSharp.Input.TypeOptions { Delay = timeBetweenKeystrokes });
+            await elem.TypeAsync(text, new TypeOptions { Delay = timeBetweenKeystrokes });
 
             data.Logger.Log($"Typed {text}", LogColors.DarkSalmon);
         }
@@ -62,14 +63,14 @@ namespace RuriLib.Blocks.Puppeteer.Elements
 
         [Block("Clicks an element", name = "Click")]
         public static async Task PuppeteerClick(BotData data, FindElementBy findBy, string identifier, int index,
-            PuppeteerSharp.Input.MouseButton mouseButton = PuppeteerSharp.Input.MouseButton.Left, int clickCount = 1,
+            MouseButton mouseButton = MouseButton.Left, int clickCount = 1,
             int timeBetweenClicks = 0)
         {
             data.Logger.LogHeader();
 
             var frame = GetFrame(data);
             var elem = await GetElement(frame, findBy, identifier, index);
-            await elem.ClickAsync(new PuppeteerSharp.Input.ClickOptions { Button = mouseButton, ClickCount = clickCount, Delay = timeBetweenClicks });
+            await elem.ClickAsync(new ClickOptions { Button = mouseButton, ClickCount = clickCount, Delay = timeBetweenClicks });
 
             data.Logger.Log($"Clicked {clickCount} time(s) with {mouseButton} button", LogColors.DarkSalmon);
         }

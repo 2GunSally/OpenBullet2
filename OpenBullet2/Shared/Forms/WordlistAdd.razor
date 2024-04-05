@@ -1,5 +1,6 @@
-﻿@implements IDisposable
-@inject Microsoft.Extensions.Localization.IStringLocalizer<WordlistAdd> Loc
+﻿@using Microsoft.Extensions.Localization
+@implements IDisposable
+@inject IStringLocalizer<WordlistAdd> Loc
 
 @if (wordlist != null)
 {

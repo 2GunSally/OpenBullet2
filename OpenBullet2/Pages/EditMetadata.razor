@@ -1,9 +1,9 @@
 ﻿@page "/config/edit/metadata"
 @using RuriLib.Models.Configs
-@using OpenBullet2.Services
+@using Microsoft.Extensions.Localization
 @inject ConfigService ConfigService
 @inject NavigationManager Nav
-@inject Microsoft.Extensions.Localization.IStringLocalizer<EditMetadata> Loc
+@inject IStringLocalizer<EditMetadata> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 @if (config != null)

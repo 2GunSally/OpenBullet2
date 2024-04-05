@@ -1,7 +1,8 @@
 ﻿@page "/monitor"
+@using Microsoft.Extensions.Localization
+@using RuriLib.Models.Jobs.Monitor.Actions
 @using RuriLib.Models.Jobs.Monitor.Triggers
-@using RuriLib.Models.Jobs.Monitor.Actions 
-@inject Microsoft.Extensions.Localization.IStringLocalizer<JobMonitor> Loc
+@inject IStringLocalizer<JobMonitor> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 <div class="container-fluid">

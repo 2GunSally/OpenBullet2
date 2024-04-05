@@ -1,5 +1,4 @@
 ﻿using OpenBullet2.Core.Entities;
-using System.Threading.Tasks;
 
 namespace OpenBullet2.Core.Repositories
 {

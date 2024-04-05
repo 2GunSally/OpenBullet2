@@ -1,5 +1,6 @@
 ﻿@page "/config/edit/lolicode"
-@inject Microsoft.Extensions.Localization.IStringLocalizer<EditLC> Loc
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<EditLC> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 @if (config != null)

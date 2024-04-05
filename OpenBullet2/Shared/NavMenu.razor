@@ -1,16 +1,17 @@
-@using OpenBullet2.Helpers
-@using RuriLib.Models.Configs
-@using System.Globalization
-@using OpenBullet2.Repositories
-@using OpenBullet2.Shared.Forms 
-@using OpenBullet2.Auth
 @inject IConfigRepository ConfigRepo
 @inject UpdateService UpdateService
 @inject NavigationManager NavigationManager 
 @inject ConfigService ConfigService
 @inject AuthenticationStateProvider Auth 
 @inject IModalService Modal
-@inject Microsoft.Extensions.Localization.IStringLocalizer<NavMenu> Loc
+@inject IStringLocalizer<NavMenu> Loc
+@using OpenBullet2.Helpers
+@using OpenBullet2.Shared.Forms
+@using RuriLib.Helpers.Transpilers
+@using RuriLib.Models.Configs
+@using Microsoft.Extensions.Localization
+@using OpenBullet2.Auth
+@using System.Globalization
 @implements IDisposable
 
 <div class="top-row pl-4 navbar navbar-dark" style="padding-left: 0.5rem !important;">
@@ -256,7 +257,7 @@
         {
             try
             {
-                RuriLib.Helpers.Transpilers.Loli2StackTranspiler.Transpile(ConfigService.SelectedConfig.LoliCodeScript);
+                Loli2StackTranspiler.Transpile(ConfigService.SelectedConfig.LoliCodeScript);
             }
             catch (Exception ex)
             {

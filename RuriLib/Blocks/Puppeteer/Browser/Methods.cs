@@ -1,17 +1,15 @@
-﻿using Yove.Proxy;
-using PuppeteerExtraSharp;
+﻿using PuppeteerExtraSharp;
 using PuppeteerExtraSharp.Plugins.ExtraStealth;
 using PuppeteerSharp;
 using RuriLib.Attributes;
+using RuriLib.Helpers;
 using RuriLib.Logging;
 using RuriLib.Models.Bots;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Yove.Proxy;
 using ProxyType = RuriLib.Models.Proxies.ProxyType;
-using RuriLib.Helpers;
 
 namespace RuriLib.Blocks.Puppeteer.Browser
 {

@@ -1,6 +1,7 @@
 ﻿@page "/wordlists"
+@using Microsoft.Extensions.Localization
 @using OpenBullet2.Core.Entities
-@inject Microsoft.Extensions.Localization.IStringLocalizer<Wordlists> Loc
+@inject IStringLocalizer<Wordlists> Loc
 @attribute [Authorize(Roles = "Admin,Guest")]
 
 <div class="container-fluid">

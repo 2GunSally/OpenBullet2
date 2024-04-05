@@ -1,7 +1,8 @@
 ﻿@page "/jobs"
-@using RuriLib.Models.Jobs
+@using Microsoft.Extensions.Localization
 @using RuriLib.Models.Data.DataPools
-@inject Microsoft.Extensions.Localization.IStringLocalizer<JobManager> Loc
+@using RuriLib.Models.Jobs
+@inject IStringLocalizer<JobManager> Loc
 @attribute [Authorize(Roles = "Admin,Guest")]
 
 <div class="container-fluid">

@@ -2,15 +2,15 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
-using OpenBullet2.Helpers;
 using OpenBullet2.Core.Models.Settings;
+using OpenBullet2.Core.Services;
+using OpenBullet2.Helpers;
 using OpenBullet2.Repositories;
 using OpenBullet2.Shared.Forms;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using OpenBullet2.Core.Services;
 
 namespace OpenBullet2.Pages
 {

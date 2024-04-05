@@ -2,6 +2,7 @@
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using OpenBullet2.DTOs;
 using OpenBullet2.Helpers;
 using RuriLib.Models.Proxies;
 using System;
@@ -78,7 +79,7 @@ namespace OpenBullet2.Shared.Forms
         private void ReturnLines(string text)
         {
             var lines = text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-            var dto = new DTOs.ProxiesForImportDto
+            var dto = new ProxiesForImportDto
             {
                 Lines = lines,
                 DefaultType = defaultType,

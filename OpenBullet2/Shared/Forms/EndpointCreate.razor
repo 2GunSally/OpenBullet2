@@ -1,6 +1,7 @@
-﻿@using OpenBullet2.Core.Models.Sharing 
+﻿@using OpenBullet2.Core.Models.Sharing
+@using Microsoft.Extensions.Localization
 @inject IModalService ModalService
-@inject Microsoft.Extensions.Localization.IStringLocalizer<EndpointCreate> Loc
+@inject IStringLocalizer<EndpointCreate> Loc
 
 <EditForm Model="endpoint">
     <label>@Loc["Route"]</label>

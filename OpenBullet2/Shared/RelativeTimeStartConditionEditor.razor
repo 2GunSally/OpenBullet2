@@ -1,5 +1,6 @@
 ﻿@using RuriLib.Models.Jobs.StartConditions
-@inject Microsoft.Extensions.Localization.IStringLocalizer<RelativeTimeStartConditionEditor> Loc
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<RelativeTimeStartConditionEditor> Loc
 
 <input type="number" style="width: 50px;" value="@hours" @onchange="ChangeHours" /> @Loc["hours"]
 <input type="number" style="width: 50px; margin-left: 10px;" value="@minutes" @onchange="ChangeMinutes" /> @Loc["minutes"]

@@ -1,7 +1,8 @@
 ﻿@page "/config/edit/stacker"
+@using Microsoft.Extensions.Localization
 @using RuriLib.Models.Blocks
 @using RuriLib.Models.Blocks.Custom
-@inject Microsoft.Extensions.Localization.IStringLocalizer<Stacker> Loc
+@inject IStringLocalizer<Stacker> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 @if (config != null)

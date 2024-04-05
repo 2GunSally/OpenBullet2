@@ -4,11 +4,13 @@ using GridBlazor;
 using GridBlazor.Pages;
 using GridMvc.Server;
 using GridShared;
+using GridShared.Sorting;
 using GridShared.Utility;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using OpenBullet2.Core.Services;
 using OpenBullet2.Helpers;
-using OpenBullet2.Core.Models.Sharing;
 using OpenBullet2.Services;
 using OpenBullet2.Shared.Forms;
 using RuriLib.Models.Configs;
@@ -17,7 +19,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using OpenBullet2.Core.Services;
+using Endpoint = OpenBullet2.Core.Models.Sharing.Endpoint;
 
 namespace OpenBullet2.Pages
 {
@@ -60,7 +62,7 @@ namespace OpenBullet2.Pages
                 c.Add(x => x.Settings.ProxySettings.UseProxies).Titled(Loc["Proxies"]);
                 c.Add(x => x.Metadata.CreationDate).Titled(Loc["CreationDate"]).SetFilterWidgetType("DateTimeLocal").Format("{0:dd/MM/yyyy HH:mm}");
                 c.Add(x => x.Metadata.LastModified).Titled(Loc["LastModified"]).SetFilterWidgetType("DateTimeLocal").Format("{0:dd/MM/yyyy HH:mm}")
-                    .Sortable(true).SortInitialDirection(GridShared.Sorting.GridSortDirection.Descending);
+                    .Sortable(true).SortInitialDirection(GridSortDirection.Descending);
             };
 
             var query = new QueryDictionary<StringValues>();
@@ -92,7 +94,7 @@ namespace OpenBullet2.Pages
         {
             VolatileSettings.GridQueries[(0, "sharingGrid")] = query;
 
-            var server = new GridServer<Config>(configs, new Microsoft.AspNetCore.Http.QueryCollection(query),
+            var server = new GridServer<Config>(configs, new QueryCollection(query),
                 true, "sharingGrid", columns, 15).Sortable().Filterable().WithMultipleFilters();
 
             // Return items to displays

@@ -1,5 +1,6 @@
 ﻿@page "/config/edit/loliscript"
-@inject Microsoft.Extensions.Localization.IStringLocalizer<EditLS> Loc
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<EditLS> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 @if (config != null)

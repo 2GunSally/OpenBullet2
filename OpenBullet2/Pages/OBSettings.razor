@@ -1,6 +1,7 @@
 ﻿@page "/settings/openbullet"
+@using Microsoft.Extensions.Localization
 @using OpenBullet2.Core.Models.Settings
-@inject Microsoft.Extensions.Localization.IStringLocalizer<OBSettings> Loc
+@inject IStringLocalizer<OBSettings> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 <audio id="hit-sound" src="/sounds/hit.wav" />

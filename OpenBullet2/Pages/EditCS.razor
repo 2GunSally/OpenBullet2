@@ -1,6 +1,7 @@
 ﻿@page "/config/edit/code"
+@using Microsoft.Extensions.Localization
 @using RuriLib.Models.Configs
-@inject Microsoft.Extensions.Localization.IStringLocalizer<EditCS> Loc
+@inject IStringLocalizer<EditCS> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 @if (Config != null)

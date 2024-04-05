@@ -1,10 +1,12 @@
-﻿@using OpenBullet2.Auth
-@using OpenBullet2.Helpers
-@using System.Net 
+﻿@using OpenBullet2.Helpers
+@using Microsoft.AspNetCore.Http
+@using Microsoft.Extensions.Localization
+@using OpenBullet2.Auth
+@using System.Net
 @inject AuthenticationStateProvider Auth
 @inject NavigationManager Nav
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor ContextAccessor
-@inject Microsoft.Extensions.Localization.IStringLocalizer<LoginForm> Loc
+@inject IHttpContextAccessor ContextAccessor
+@inject IStringLocalizer<LoginForm> Loc
 
 <p>@Loc["NotAuthedPleaseLogin"]</p>
 <EditForm Model="user">

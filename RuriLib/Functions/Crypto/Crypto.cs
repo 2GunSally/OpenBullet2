@@ -1,15 +1,15 @@
-﻿using JWT;
+﻿using BCrypt.Net;
+using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Numerics;
+using System.Security.Cryptography;
 using System.Text;
-using System.Globalization;
-using BCrypt.Net;
 
 namespace RuriLib.Functions.Crypto
 {

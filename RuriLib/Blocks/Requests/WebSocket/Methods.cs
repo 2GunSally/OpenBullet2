@@ -2,6 +2,7 @@
 using RuriLib.Functions.Conversion;
 using RuriLib.Logging;
 using RuriLib.Models.Bots;
+using RuriLib.Models.Proxies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace RuriLib.Blocks.Requests.WebSocket
             IWebProxy proxy = null;
             if (data.UseProxy && data.Proxy is not null)
             {
-                if (data.Proxy.Type != Models.Proxies.ProxyType.Http)
+                if (data.Proxy.Type != ProxyType.Http)
                 {
                     throw new NotSupportedException("Only http proxies are supported");
                 }

@@ -18,6 +18,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using HttpRequestOptions = RuriLib.Functions.Http.Options.HttpRequestOptions;
 
 namespace RuriLib.Functions.Http
 {
@@ -298,7 +299,7 @@ namespace RuriLib.Functions.Http
         }
 
         private static async Task LogHttpResponseData(BotData data, HttpResponseMessage response,
-            CookieContainer cookieContainer, Options.HttpRequestOptions requestOptions)
+            CookieContainer cookieContainer, HttpRequestOptions requestOptions)
         {
             // Try to read the raw source for Content-Length calculation
             try

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using MaxMind.GeoIP2;
+using RuriLib.Models.Proxies;
+using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using MaxMind.GeoIP2;
-using RuriLib.Models.Proxies;
 
 namespace OpenBullet2.Core.Models.Proxies
 {

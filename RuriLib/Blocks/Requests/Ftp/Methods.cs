@@ -3,6 +3,7 @@ using FluentFTP.Proxy;
 using RuriLib.Attributes;
 using RuriLib.Logging;
 using RuriLib.Models.Bots;
+using RuriLib.Models.Proxies;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -20,7 +21,7 @@ namespace RuriLib.Blocks.Requests.Ftp
         {
             data.Logger.LogHeader();
 
-            if (data.UseProxy && data.Proxy is not null && data.Proxy.Type != Models.Proxies.ProxyType.Http)
+            if (data.UseProxy && data.Proxy is not null && data.Proxy.Type != ProxyType.Http)
             {
                 throw new Exception("Currently, this block only supports HTTP proxies");
             }

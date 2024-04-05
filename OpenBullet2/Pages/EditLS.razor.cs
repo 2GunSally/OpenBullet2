@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components;
 using OpenBullet2.Core.Services;
 using OpenBullet2.Helpers;
-using OpenBullet2.Logging;
 using RuriLib.Models.Configs;
 using System.Threading.Tasks;
 

@@ -1,6 +1,7 @@
 ﻿using RuriLib.Exceptions;
 using RuriLib.Helpers.Blocks;
 using RuriLib.Models.Blocks;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -22,7 +23,7 @@ namespace RuriLib.Helpers.Transpilers
             if (string.IsNullOrWhiteSpace(script))
                 return new List<BlockInstance>();
 
-            var lines = script.Split(new string[] { "\n", "\r\n" }, System.StringSplitOptions.None);
+            var lines = script.Split(new string[] { "\n", "\r\n" }, StringSplitOptions.None);
             var stack = new List<BlockInstance>();
 
             var localLineNumber = 0;

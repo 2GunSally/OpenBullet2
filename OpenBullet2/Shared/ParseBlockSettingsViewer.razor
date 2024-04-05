@@ -1,6 +1,7 @@
 ﻿@using RuriLib.Models.Blocks.Custom
 @using RuriLib.Models.Blocks.Custom.Parse
-@inject Microsoft.Extensions.Localization.IStringLocalizer<ParseBlockSettingsViewer> Loc
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<ParseBlockSettingsViewer> Loc
 
 <EditForm Model="Block">
     <h6 class="font-weight-bold fg-custom">@Loc["Label"]:</h6>

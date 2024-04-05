@@ -1,18 +1,17 @@
 ﻿using RuriLib.Http.Helpers;
 using RuriLib.Http.Models;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO.Pipelines;
-using System.Buffers;
-using System.Runtime.CompilerServices;
 
 namespace RuriLib.Http
 {

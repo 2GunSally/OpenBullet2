@@ -1,7 +1,8 @@
 ﻿@using OpenBullet2.Core.Entities
+@using Microsoft.Extensions.Localization
 @inject IModalService ModalService
 @inject IProxyGroupRepository repo
-@inject Microsoft.Extensions.Localization.IStringLocalizer<ProxyGroupEdit> Loc
+@inject IStringLocalizer<ProxyGroupEdit> Loc
 
 @if (model != null)
 {

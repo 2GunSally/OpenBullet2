@@ -1,21 +1,21 @@
 using CommandLine;
 using CommandLine.Text;
 using RuriLib.Helpers;
+using RuriLib.Models.Bots;
+using RuriLib.Models.Data;
 using RuriLib.Models.Data.DataPools;
 using RuriLib.Models.Hits;
 using RuriLib.Models.Hits.HitOutputs;
 using RuriLib.Models.Jobs;
 using RuriLib.Models.Proxies;
 using RuriLib.Models.Proxies.ProxySources;
-using RuriLib.Services;
 using RuriLib.Parallelization.Models;
+using RuriLib.Services;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Threading;
-using RuriLib.Models.Bots;
-using RuriLib.Models.Data;
 
 namespace OpenBullet2.Console
 {
@@ -231,7 +231,7 @@ Feel free to contribute to the versatility of this project by adding the missing
                                        $"Hits: {job.DataHits} Custom: {job.DataCustom} ToCheck: {job.DataToCheck} Fails: {job.DataFails} Retries: {job.DataRetried + job.DataBanned} | " +
                                        $"Proxies: {job.ProxiesAlive} / {job.ProxiesTotal}";
             }
-            catch (System.InvalidOperationException)
+            catch (InvalidOperationException)
             {
                 /*
                     Unhandled exception. System.InvalidOperationException: Collection was modified; enumeration operation may not execute.

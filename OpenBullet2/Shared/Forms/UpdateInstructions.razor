@@ -1,5 +1,6 @@
-﻿@inject UpdateService UpdateService
-@inject Microsoft.Extensions.Localization.IStringLocalizer<UpdateInstructions> Loc
+﻿@using Microsoft.Extensions.Localization
+@inject UpdateService UpdateService
+@inject IStringLocalizer<UpdateInstructions> Loc
 
 <div style="font-family: Consolas; max-width: 500px;">
     <p>@Loc["CurrentVersion"]: @UpdateService.CurrentVersion</p>

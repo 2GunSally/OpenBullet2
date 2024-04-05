@@ -1,9 +1,9 @@
 ﻿@using OpenBullet2.Core.Entities
-@using RuriLib.Services
+@using Microsoft.Extensions.Localization
 @inject IModalService ModalService
 @inject IHitRepository HitRepo
 @inject RuriLibSettingsService RuriLibSettings
-@inject Microsoft.Extensions.Localization.IStringLocalizer<HitEdit> Loc
+@inject IStringLocalizer<HitEdit> Loc
 
 @if (model != null)
 {

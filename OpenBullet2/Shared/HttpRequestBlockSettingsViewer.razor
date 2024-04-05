@@ -1,7 +1,8 @@
 @using RuriLib.Models.Blocks.Custom
 @using RuriLib.Models.Blocks.Custom.HttpRequest
 @using RuriLib.Models.Blocks.Settings
-@inject Microsoft.Extensions.Localization.IStringLocalizer<HttpRequestBlockSettingsViewer> Loc
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<HttpRequestBlockSettingsViewer> Loc
 
 <EditForm Model="Block">
     <h6 class="font-weight-bold fg-custom">@Loc["Label"]:</h6>

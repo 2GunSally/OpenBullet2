@@ -4,6 +4,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace OpenBullet2.Core.Helpers
 {
@@ -28,7 +29,7 @@ namespace OpenBullet2.Core.Helpers
 
         public static string ResizeBase64(string base64, int width, int height)
         {
-            using var image = SixLabors.ImageSharp.Image.Load(Convert.FromBase64String(base64));
+            using var image = Image.Load(Convert.FromBase64String(base64));
 
             image.Mutate(x => x
                 .Resize(width, height));

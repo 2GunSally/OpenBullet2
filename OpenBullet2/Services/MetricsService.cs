@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -27,7 +29,7 @@ namespace OpenBullet2.Services
         private DateTime startTime = DateTime.Now;
         public TimeSpan UpTime => DateTime.Now - startTime;
 
-        public string CWD => System.IO.Directory.GetCurrentDirectory();
+        public string CWD => Directory.GetCurrentDirectory();
         
         public long MemoryUsage => Process.GetCurrentProcess().WorkingSet64;
 
@@ -47,7 +49,7 @@ namespace OpenBullet2.Services
 
         public MetricsService()
         {
-            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
             BuildDate = new DateTime(2000, 1, 1)
                                     .AddDays(version.Build).AddSeconds(version.Revision * 2);
             BuildNumber = $"{version.Build}.{version.Revision}";

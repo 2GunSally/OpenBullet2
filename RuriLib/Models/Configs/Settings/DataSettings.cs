@@ -1,5 +1,5 @@
-﻿using RuriLib.Models.Data.Rules;
-using RuriLib.Models.Data.Resources.Options;
+﻿using RuriLib.Models.Data.Resources.Options;
+using RuriLib.Models.Data.Rules;
 using System.Collections.Generic;
 
 namespace RuriLib.Models.Configs.Settings

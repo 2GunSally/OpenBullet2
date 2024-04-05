@@ -1,16 +1,16 @@
-﻿using Microsoft.Scripting.Utils;
-using OpenBullet2.Core.Models.Settings;
+﻿using OpenBullet2.Core.Models.Settings;
 using OpenBullet2.Core.Repositories;
+using RuriLib.Functions.Conversion;
+using RuriLib.Helpers;
 using RuriLib.Models.Configs;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.IO.Compression;
-using RuriLib.Helpers;
-using System.IO;
-using RuriLib.Functions.Conversion;
 
 namespace OpenBullet2.Core.Services
 {
@@ -84,12 +84,12 @@ namespace OpenBullet2.Core.Services
                     client.DefaultRequestHeaders.Add("Api-Key", endpoint.ApiKey);
                     using var response = await client.GetAsync(endpoint.Url);
 
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
                     {
                         throw new UnauthorizedAccessException();
                     }
 
-                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         throw new FileNotFoundException();
                     }

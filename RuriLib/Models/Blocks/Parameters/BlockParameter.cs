@@ -1,6 +1,5 @@
 ﻿using RuriLib.Extensions;
 using RuriLib.Models.Blocks.Settings;
-using RuriLib.Models.Variables;
 using System;
 
 namespace RuriLib.Models.Blocks.Parameters

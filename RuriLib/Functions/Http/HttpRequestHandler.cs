@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Text;
 using System.Threading.Tasks;
+using HttpRequestOptions = RuriLib.Functions.Http.Options.HttpRequestOptions;
 
 namespace RuriLib.Functions.Http
 {
@@ -117,7 +118,7 @@ namespace RuriLib.Functions.Http
             return parsed.ToArray();
         }
 
-        protected static HttpOptions GetClientOptions(BotData data, Options.HttpRequestOptions options) => new()
+        protected static HttpOptions GetClientOptions(BotData data, HttpRequestOptions options) => new()
         {
             ConnectTimeout = data.Providers.ProxySettings.ConnectTimeout,
             ReadWriteTimeout = data.Providers.ProxySettings.ReadWriteTimeout,

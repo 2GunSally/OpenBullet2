@@ -1,6 +1,8 @@
-﻿@using RuriLib.Models.Jobs.Monitor.Actions
+﻿@using Action = RuriLib.Models.Jobs.Monitor.Actions.Action
+@using Microsoft.Extensions.Localization
+@using RuriLib.Models.Jobs.Monitor.Actions
 @inject IModalService ModalService
-@inject Microsoft.Extensions.Localization.IStringLocalizer<ActionEdit> Loc
+@inject IStringLocalizer<ActionEdit> Loc
 
 <EditForm Model="Action">
     @switch (Action)
@@ -71,5 +73,5 @@
 
 @code {
     [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
-    [Parameter] public RuriLib.Models.Jobs.Monitor.Actions.Action Action { get; set; }
+    [Parameter] public Action Action { get; set; }
 }

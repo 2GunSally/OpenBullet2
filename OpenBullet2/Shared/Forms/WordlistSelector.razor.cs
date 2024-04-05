@@ -12,12 +12,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
 using OpenBullet2.Auth;
 using OpenBullet2.Core.Entities;
-using OpenBullet2.Helpers;
 using OpenBullet2.Core.Repositories;
+using OpenBullet2.Helpers;
 using OpenBullet2.Services;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -108,7 +109,7 @@ namespace OpenBullet2.Shared.Forms
 
             try
             {
-                var lines = System.IO.File.ReadLines(selectedWordlist.FileName).Take(previewAmount);
+                var lines = File.ReadLines(selectedWordlist.FileName).Take(previewAmount);
                 linesPreview = string.Join(Environment.NewLine, lines);
             }
             catch

@@ -4,6 +4,7 @@ using GridBlazor;
 using GridBlazor.Pages;
 using GridMvc.Server;
 using GridShared;
+using GridShared.Sorting;
 using GridShared.Utility;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -58,7 +59,7 @@ namespace OpenBullet2.Shared.Forms
                 c.Add(x => x.Settings.DataSettings.AllowedWordlistTypesString).Titled(Loc["Wordlists"]);
                 c.Add(x => x.Metadata.CreationDate).Titled(Loc["CreationDate"]).SetFilterWidgetType("DateTimeLocal").Format("{0:dd/MM/yyyy HH:mm}");
                 c.Add(x => x.Metadata.LastModified).Titled(Loc["LastModified"]).SetFilterWidgetType("DateTimeLocal").Format("{0:dd/MM/yyyy HH:mm}")
-                    .Sortable(true).SortInitialDirection(GridShared.Sorting.GridSortDirection.Descending);
+                    .Sortable(true).SortInitialDirection(GridSortDirection.Descending);
             };
 
             var query = new QueryDictionary<StringValues>();

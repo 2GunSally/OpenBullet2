@@ -1,5 +1,6 @@
-﻿@inject IModalService ModalService
-@inject Microsoft.Extensions.Localization.IStringLocalizer<CustomInputQuestion> Loc
+﻿@using Microsoft.Extensions.Localization
+@inject IModalService ModalService
+@inject IStringLocalizer<CustomInputQuestion> Loc
 
 <EditForm Model="answer">
     <label>@Question</label>

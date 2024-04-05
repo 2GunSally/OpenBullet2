@@ -1,14 +1,14 @@
-﻿@using OpenBullet2.Core.Entities
-@using OpenBullet2.Core.Models.Data
-@using OpenBullet2.Shared.Forms 
-@using RuriLib.Services 
-@using OpenBullet2.Auth 
+﻿@using OpenBullet2.Core.Models.Data
+@using OpenBullet2.Shared.Forms
+@using OpenBullet2.Core.Entities
+@using Microsoft.Extensions.Localization
+@using OpenBullet2.Auth
 @inject IModalService Modal
 @inject IWordlistRepository WordlistRepo
 @inject IGuestRepository GuestRepo
 @inject RuriLibSettingsService RuriLibSettings
 @inject AuthenticationStateProvider Auth
-@inject Microsoft.Extensions.Localization.IStringLocalizer<DataPoolSelector> Loc
+@inject IStringLocalizer<DataPoolSelector> Loc
 
 <RadzenRadioButtonList @bind-Value="type" TValue="DataPoolType" Change="@((args) => Change(args))">
     <Items>

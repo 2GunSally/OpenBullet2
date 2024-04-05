@@ -1,8 +1,11 @@
 ﻿@using OpenBullet2.Helpers
-@using System.ComponentModel.DataAnnotations;
+@using Microsoft.Extensions.Localization
+@using OpenBullet2.Core.Entities
+@using System.ComponentModel.DataAnnotations
+@using BCrypt.Net
 @inject IModalService ModalService
 @inject IGuestRepository GuestRepo
-@inject Microsoft.Extensions.Localization.IStringLocalizer<GuestAdd> Loc
+@inject IStringLocalizer<GuestAdd> Loc
 
 <EditForm Model="guest" OnValidSubmit="HandleValidSubmit">
 
@@ -62,10 +65,10 @@
             return;
         }
 
-        var entity = new OpenBullet2.Core.Entities.GuestEntity
+        var entity = new GuestEntity
         {
             Username = guest.Username,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(guest.Password),
+            PasswordHash = BCrypt.HashPassword(guest.Password),
             AccessExpiration = guest.AccessExpiration,
             AllowedAddresses = guest.AllowedAddresses
         };

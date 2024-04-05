@@ -1,5 +1,4 @@
 ﻿using Microsoft.JSInterop;
-using Microsoft.Scripting.Utils;
 using OpenBullet2.Helpers;
 using System;
 using System.Linq;

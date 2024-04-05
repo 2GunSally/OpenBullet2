@@ -1,14 +1,16 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
+﻿using RuriLib.Blocks.Requests.Http;
+using RuriLib.Functions.Http;
+using RuriLib.Functions.Http.Options;
 using RuriLib.Legacy.LS;
 using RuriLib.Legacy.Models;
-using System.Threading.Tasks;
 using RuriLib.Logging;
-using RuriLib.Functions.Http.Options;
-using RuriLib.Functions.Http;
 using RuriLib.Models.Variables;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace RuriLib.Legacy.Blocks
 {
@@ -149,7 +151,7 @@ namespace RuriLib.Legacy.Blocks
 
                     // Request the captcha
                     data.Logger.Enabled = false;
-                    await RuriLib.Blocks.Requests.Http.Methods.HttpRequestStandard(data, standardOptions);
+                    await Methods.HttpRequestStandard(data, standardOptions);
                     data.Logger.Enabled = true;
 
                     // Save the image
@@ -180,7 +182,7 @@ namespace RuriLib.Legacy.Blocks
                 using (var stream = new MemoryStream())
                 {
                     // Save the bitmap to the stream
-                    bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                    bitmap.Save(stream, ImageFormat.Png);
                     bytes = stream.ToArray();
                 }
 

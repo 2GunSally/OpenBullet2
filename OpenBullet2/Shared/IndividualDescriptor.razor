@@ -1,5 +1,4 @@
 ﻿@using RuriLib.Models.Blocks
-
 <div class="card" style="background-color: @Descriptor.Category.BackgroundColor; 
      color: @Descriptor.Category.ForegroundColor; cursor: pointer; border: solid 3px #000;"
      @onclick="@(() => SelectedDescriptor.InvokeAsync(Descriptor))">

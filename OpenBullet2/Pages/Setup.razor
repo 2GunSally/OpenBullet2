@@ -1,6 +1,7 @@
 ﻿@page "/setup"
-@using System.Globalization 
-@inject Microsoft.Extensions.Localization.IStringLocalizer<Setup> Loc
+@using Microsoft.Extensions.Localization
+@using System.Globalization
+@inject IStringLocalizer<Setup> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 <!--<canvas id="setup-canvas"></canvas>-->

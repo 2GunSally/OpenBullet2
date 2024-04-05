@@ -2,6 +2,7 @@ using RuriLib.Attributes;
 using RuriLib.Functions.Http;
 using RuriLib.Functions.Http.Options;
 using RuriLib.Models.Bots;
+using System;
 using System.Threading.Tasks;
 
 namespace RuriLib.Blocks.Requests.Http
@@ -39,7 +40,7 @@ namespace RuriLib.Blocks.Requests.Http
             {
                 HttpLibrary.RuriLibHttp => new RLHttpClientRequestHandler(),
                 HttpLibrary.SystemNet => new HttpClientRequestHandler(),
-                _ => throw new System.NotImplementedException()
+                _ => throw new NotImplementedException()
             };
     }
 }

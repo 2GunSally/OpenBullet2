@@ -1,13 +1,13 @@
-﻿using System;
-using System.Linq;
-using CaptchaSharp.Enums;
+﻿using CaptchaSharp.Enums;
 using CaptchaSharp.Exceptions;
 using CaptchaSharp.Models;
 using RuriLib.Legacy.LS;
 using RuriLib.Legacy.Models;
-using System.Threading.Tasks;
 using RuriLib.Logging;
 using RuriLib.Models.Captchas;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RuriLib.Legacy.Blocks
 {

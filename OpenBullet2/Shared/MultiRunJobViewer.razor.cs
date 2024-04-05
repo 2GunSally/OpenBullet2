@@ -2,13 +2,17 @@
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.JSInterop;
+using OpenBullet2.Core.Entities;
+using OpenBullet2.Core.Repositories;
+using OpenBullet2.Core.Services;
 using OpenBullet2.Helpers;
 using OpenBullet2.Logging;
-using OpenBullet2.Core.Repositories;
 using OpenBullet2.Services;
 using OpenBullet2.Shared.Forms;
 using RuriLib.Logging;
+using RuriLib.Models.Configs;
 using RuriLib.Models.Hits;
 using RuriLib.Models.Jobs;
 using RuriLib.Parallelization.Models;
@@ -18,10 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenBullet2.Core.Services;
-using OpenBullet2.Core.Entities;
-using Microsoft.EntityFrameworkCore;
-using RuriLib.Models.Configs;
 
 namespace OpenBullet2.Shared
 {

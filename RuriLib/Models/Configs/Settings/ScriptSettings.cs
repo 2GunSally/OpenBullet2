@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using RuriLib.Helpers.CSharp;
+﻿using RuriLib.Helpers.CSharp;
+using System.Collections.Generic;
 
 namespace RuriLib.Models.Configs.Settings
 {

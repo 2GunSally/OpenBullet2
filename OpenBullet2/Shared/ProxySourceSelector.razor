@@ -1,9 +1,11 @@
 ﻿@using OpenBullet2.Core.Models.Proxies
-@using OpenBullet2.Core.Entities 
-@using OpenBullet2.Auth 
+@using RuriLib.Models.Proxies
+@using OpenBullet2.Core.Entities
+@using Microsoft.Extensions.Localization
+@using OpenBullet2.Auth
 @inject IProxyGroupRepository ProxyGroupRepo
 @inject AuthenticationStateProvider Auth
-@inject Microsoft.Extensions.Localization.IStringLocalizer<ProxySourceSelector> Loc
+@inject IStringLocalizer<ProxySourceSelector> Loc
 
 <div class="container-fluid">
 
@@ -52,7 +54,7 @@
                         </div>
                         <div class="col-auto">
                             <InputSelect @bind-Value="x.DefaultType">
-                                @foreach (var type in Enum.GetNames(typeof(RuriLib.Models.Proxies.ProxyType)))
+                                @foreach (var type in Enum.GetNames(typeof(ProxyType)))
                                 {
                                     <option value="@type">@type</option>
                                 }
@@ -69,7 +71,7 @@
                         </div>
                         <div class="col-auto">
                             <InputSelect @bind-Value="x.DefaultType">
-                                @foreach (var type in Enum.GetNames(typeof(RuriLib.Models.Proxies.ProxyType)))
+                                @foreach (var type in Enum.GetNames(typeof(ProxyType)))
                                 {
                                     <option value="@type">@type</option>
                                 }

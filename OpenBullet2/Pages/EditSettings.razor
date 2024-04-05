@@ -1,8 +1,9 @@
 ﻿@page "/config/edit/settings"
-@using RuriLib.Models.Data.Rules
-@using RuriLib.Models.Data.Resources.Options
+@using Microsoft.Extensions.Localization
 @using RuriLib.Models.Configs.Settings
-@inject Microsoft.Extensions.Localization.IStringLocalizer<EditSettings> Loc
+@using RuriLib.Models.Data.Resources.Options
+@using RuriLib.Models.Data.Rules
+@inject IStringLocalizer<EditSettings> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 @if (settings != null)

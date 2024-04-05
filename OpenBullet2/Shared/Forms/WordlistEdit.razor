@@ -1,9 +1,9 @@
 ﻿@using OpenBullet2.Core.Entities
-@using RuriLib.Services 
+@using Microsoft.Extensions.Localization
 @inject IModalService ModalService
 @inject IWordlistRepository WordlistRepo
 @inject RuriLibSettingsService RuriLibSettings
-@inject Microsoft.Extensions.Localization.IStringLocalizer<WordlistEdit> Loc
+@inject IStringLocalizer<WordlistEdit> Loc
 
 @if (model != null)
 {

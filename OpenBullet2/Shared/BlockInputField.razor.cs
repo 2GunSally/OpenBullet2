@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OpenBullet2.Core.Services;
 using OpenBullet2.Services;
-using Radzen;
 using RuriLib.Models.Blocks;
 using RuriLib.Models.Blocks.Custom;
 using RuriLib.Models.Blocks.Settings;

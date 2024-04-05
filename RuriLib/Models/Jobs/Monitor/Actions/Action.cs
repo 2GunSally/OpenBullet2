@@ -43,7 +43,7 @@ namespace RuriLib.Models.Jobs.Monitor.Actions
         public override Task Execute(int currentJobId, IEnumerable<Job> jobs)
         {
             jobs.First(j => j.Id == JobId).StartCondition = 
-                new RelativeTimeStartCondition { StartAfter = new System.TimeSpan(Days, Hours, Minutes, Seconds) };
+                new RelativeTimeStartCondition { StartAfter = new TimeSpan(Days, Hours, Minutes, Seconds) };
 
             return Task.CompletedTask;
         }

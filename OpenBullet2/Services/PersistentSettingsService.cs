@@ -1,5 +1,5 @@
-﻿using System.IO;
-using OpenBullet2.Core.Services;
+﻿using OpenBullet2.Core.Services;
+using System.IO;
 
 namespace OpenBullet2.Services
 {

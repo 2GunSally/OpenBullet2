@@ -1,9 +1,10 @@
 ﻿@page "/job/{id:int}"
-@using OpenBullet2.Services
 @using RuriLib.Models.Jobs
+@using Microsoft.Extensions.Localization
+@using OpenBullet2.Auth
 @inject JobManagerService Manager
 @inject AuthenticationStateProvider Auth 
-@inject Microsoft.Extensions.Localization.IStringLocalizer<JobViewer> Loc
+@inject IStringLocalizer<JobViewer> Loc
 @attribute [Authorize(Roles = "Admin,Guest")]
 
 @if (job == null || !CanSeeJob(job.OwnerId))
@@ -32,7 +33,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        uid = await ((OpenBullet2.Auth.OBAuthenticationStateProvider)Auth).GetCurrentUserId();
+        uid = await ((OBAuthenticationStateProvider)Auth).GetCurrentUserId();
         job = Manager.Jobs.FirstOrDefault(j => j.Id == Id);
     }
 

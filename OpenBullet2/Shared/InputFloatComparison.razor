@@ -1,5 +1,5 @@
 ﻿@using RuriLib.Models.Conditions.Comparisons
-
+@using System.Globalization
 <div class="row">
     <div class="col-auto">
     @Label
@@ -26,7 +26,7 @@
 
     private Task OnAmountChanged(ChangeEventArgs e)
     {
-        Amount = float.Parse((string)e.Value, System.Globalization.CultureInfo.InvariantCulture);
+        Amount = float.Parse((string)e.Value, CultureInfo.InvariantCulture);
         return AmountChanged.InvokeAsync(Amount);
     }
 

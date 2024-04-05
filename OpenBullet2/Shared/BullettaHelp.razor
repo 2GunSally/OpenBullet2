@@ -1,5 +1,6 @@
-﻿@using System.Text.RegularExpressions
-@inject Microsoft.Extensions.Localization.IStringLocalizer<BullettaHelp> Loc
+﻿@using Microsoft.Extensions.Localization
+@using System.Text.RegularExpressions
+@inject IStringLocalizer<BullettaHelp> Loc
 
 <a href="javascript:;" @onclick="Toggle">@Title</a>
 

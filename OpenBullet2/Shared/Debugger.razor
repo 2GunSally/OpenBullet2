@@ -1,6 +1,7 @@
-﻿@using RuriLib.Models.Variables
+﻿@using Microsoft.Extensions.Localization
 @using RuriLib.Models.Debugger
-@inject Microsoft.Extensions.Localization.IStringLocalizer<Debugger> Loc
+@using RuriLib.Models.Proxies
+@inject IStringLocalizer<Debugger> Loc
 
 <div class="container-fluid my-3">
     <div class="row">
@@ -63,7 +64,7 @@
             <div class="col-auto">
                 <label>@Loc["Type"]</label>
                 <InputSelect @bind-Value="options.ProxyType">
-                    @foreach (var name in Enum.GetNames(typeof(RuriLib.Models.Proxies.ProxyType)))
+                    @foreach (var name in Enum.GetNames(typeof(ProxyType)))
                     {
                         <option value="@name">@name</option>
                     }

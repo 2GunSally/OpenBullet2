@@ -1,8 +1,9 @@
 ﻿@page "/settings/rurilib"
-@using RuriLib.Models.Settings
-@using RuriLib.Parallelization 
+@using Microsoft.Extensions.Localization
 @using RuriLib.Functions.Captchas
-@inject Microsoft.Extensions.Localization.IStringLocalizer<RLSettings> Loc
+@using RuriLib.Models.Settings
+@using RuriLib.Parallelization
+@inject IStringLocalizer<RLSettings> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 <button class="btn btn-outline-success" style="margin: 10px 0;" @onclick="Save">@Loc["Save"]</button>

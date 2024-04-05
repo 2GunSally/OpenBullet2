@@ -1,6 +1,7 @@
 ﻿@page "/guests"
+@using Microsoft.Extensions.Localization
 @using OpenBullet2.Core.Entities
-@inject Microsoft.Extensions.Localization.IStringLocalizer<Guests> Loc
+@inject IStringLocalizer<Guests> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 <div class="container-fluid">

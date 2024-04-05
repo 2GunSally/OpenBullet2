@@ -1,6 +1,7 @@
-﻿@using RuriLib.Logging 
+﻿@using RuriLib.Logging
+@using Microsoft.Extensions.Localization
 @inject IModalService Modal
-@inject Microsoft.Extensions.Localization.IStringLocalizer<BotLoggerViewer> Loc
+@inject IStringLocalizer<BotLoggerViewer> Loc
 
 <h5>@Loc["CompleteLog"]</h5>
 <div class="debugger-log">

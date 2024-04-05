@@ -1,15 +1,17 @@
-﻿@using RuriLib.Models.Jobs
-@using OpenBullet2.Core.Models.Hits
-@using RuriLib.Models.Hits.HitOutputs
-@using RuriLib.Models.Proxies.ProxySources
+﻿@using RuriLib.Extensions
 @using RuriLib.Models.Data.DataPools
-@using OpenBullet2.Core.Models.Proxies.Sources
-@using System.Globalization
+@using RuriLib.Models.Hits.HitOutputs
+@using RuriLib.Models.Jobs
 @using RuriLib.Models.Jobs.StartConditions
-@using RuriLib.Extensions
+@using RuriLib.Models.Proxies.ProxySources
+@using Microsoft.Extensions.Localization
+@using OpenBullet2.Core.Models.Hits
+@using OpenBullet2.Core.Models.Proxies.Sources
+@using OpenBullet2.Core.Models.Settings
 @using Microsoft.AspNetCore.Components.Web.Virtualization
+@using System.Globalization
 @implements IDisposable
-@inject Microsoft.Extensions.Localization.IStringLocalizer<MultiRunJobViewer> Loc
+@inject IStringLocalizer<MultiRunJobViewer> Loc
 
 <audio id="hit-sound" src="/sounds/hit.wav" />
 
@@ -254,7 +256,7 @@
     </div>
 }
 
-@if (OBSettingsService.Settings.GeneralSettings.DefaultJobDisplayMode == Core.Models.Settings.JobDisplayMode.Detailed)
+@if (OBSettingsService.Settings.GeneralSettings.DefaultJobDisplayMode == JobDisplayMode.Detailed)
 {
     <table class="table mt-3">
         <thead>

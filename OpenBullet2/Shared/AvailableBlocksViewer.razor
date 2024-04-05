@@ -1,7 +1,9 @@
 ﻿@using RuriLib.Models.Blocks
 @using RuriLib.Models.Trees
+@using Microsoft.Extensions.Localization
+@using RuriLib
 @inject VolatileSettingsService VolatileSettings
-@inject Microsoft.Extensions.Localization.IStringLocalizer<AvailableBlocksViewer> Loc
+@inject IStringLocalizer<AvailableBlocksViewer> Loc
 
 <div class="container-fluid">
     <div class="row py-1">
@@ -86,7 +88,7 @@ else
 
     protected override void OnInitialized()
     {
-        var root = RuriLib.Globals.DescriptorsRepository.AsTree();
+        var root = Globals.DescriptorsRepository.AsTree();
         currentNode = root
             .SubCategories.First(s => s.Name == "RuriLib")
             .SubCategories.First(s => s.Name == "Blocks");
@@ -134,7 +136,7 @@ else
     private void FilterChanged(string value)
     {
         filter = value;
-        filteredDescriptors = RuriLib.Globals.DescriptorsRepository.Descriptors.Values
+        filteredDescriptors = Globals.DescriptorsRepository.Descriptors.Values
                 .Where(d => d.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
         StateHasChanged();
     }

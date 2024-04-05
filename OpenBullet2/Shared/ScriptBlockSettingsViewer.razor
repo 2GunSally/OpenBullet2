@@ -1,8 +1,9 @@
 ﻿@using RuriLib.Models.Blocks.Custom
 @using RuriLib.Models.Blocks.Custom.Script
 @using RuriLib.Models.Variables
+@using Microsoft.Extensions.Localization
 @inject OpenBulletSettingsService OBSettingsService 
-@inject Microsoft.Extensions.Localization.IStringLocalizer<ScriptBlockSettingsViewer> Loc
+@inject IStringLocalizer<ScriptBlockSettingsViewer> Loc
 
 <EditForm Model="Block">
     <h6 class="font-weight-bold fg-custom">@Loc["Label"]:</h6>

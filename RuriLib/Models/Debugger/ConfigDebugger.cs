@@ -1,6 +1,7 @@
 ﻿using IronPython.Compiler;
 using IronPython.Hosting;
 using IronPython.Runtime;
+using OpenQA.Selenium;
 using PuppeteerSharp;
 using RuriLib.Exceptions;
 using RuriLib.Helpers;
@@ -15,7 +16,6 @@ using RuriLib.Models.Configs;
 using RuriLib.Models.Data;
 using RuriLib.Models.Data.Resources;
 using RuriLib.Models.Data.Resources.Options;
-using RuriLib.Models.Proxies;
 using RuriLib.Models.Variables;
 using RuriLib.Providers.RandomNumbers;
 using RuriLib.Providers.UserAgents;
@@ -28,6 +28,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Proxy = RuriLib.Models.Proxies.Proxy;
 
 namespace RuriLib.Models.Debugger
 {
@@ -57,7 +58,7 @@ namespace RuriLib.Models.Debugger
         private Stepper stepper;
         private CancellationTokenSource cts;
         private Browser lastPuppeteerBrowser;
-        private OpenQA.Selenium.WebDriver lastSeleniumBrowser;
+        private WebDriver lastSeleniumBrowser;
 
         public ConfigDebugger(Config config, DebuggerOptions options = null, BotLogger logger = null)
         {
@@ -313,7 +314,7 @@ namespace RuriLib.Models.Debugger
 
                 // Save the browsers for later use
                 lastPuppeteerBrowser = data.TryGetObject<Browser>("puppeteer");
-                lastSeleniumBrowser = data.TryGetObject<OpenQA.Selenium.WebDriver>("selenium");
+                lastSeleniumBrowser = data.TryGetObject<WebDriver>("selenium");
 
                 // Dispose stuff in data.Objects
                 data.DisposeObjectsExcept(new[] { "puppeteer", "puppeteerPage", "puppeteerFrame", "selenium" });

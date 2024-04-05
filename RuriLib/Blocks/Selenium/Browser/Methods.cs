@@ -1,17 +1,16 @@
-﻿using RuriLib.Attributes;
-using RuriLib.Logging;
-using RuriLib.Models.Bots;
-
-using ProxyType = RuriLib.Models.Proxies.ProxyType;
-using OpenQA.Selenium.Remote;
-using RuriLib.Models.Settings;
+﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
-using System;
-using OpenQA.Selenium;
-using System.Linq;
-using System.Drawing;
+using OpenQA.Selenium.Remote;
+using RuriLib.Attributes;
 using RuriLib.Helpers;
+using RuriLib.Logging;
+using RuriLib.Models.Bots;
+using RuriLib.Models.Settings;
+using System;
+using System.Drawing;
+using System.Linq;
+using ProxyType = RuriLib.Models.Proxies.ProxyType;
 
 namespace RuriLib.Blocks.Selenium.Browser
 {

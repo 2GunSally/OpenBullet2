@@ -1,9 +1,9 @@
-﻿using System;
-using System.Text;
+﻿using RuriLib.Proxies.Helpers;
+using System;
 using System.Net.Sockets;
-using System.Threading.Tasks;
+using System.Text;
 using System.Threading;
-using RuriLib.Proxies.Helpers;
+using System.Threading.Tasks;
 using static RuriLib.Proxies.Clients.Socks4Constants;
 
 namespace RuriLib.Proxies.Clients

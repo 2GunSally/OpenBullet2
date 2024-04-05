@@ -2,6 +2,7 @@
 using MailKit.Net.Imap;
 using MailKit.Net.Proxy;
 using MailKit.Search;
+using MailKit.Security;
 using RuriLib.Attributes;
 using RuriLib.Functions.Http;
 using RuriLib.Functions.Imap;
@@ -9,6 +10,7 @@ using RuriLib.Functions.Networking;
 using RuriLib.Http.Models;
 using RuriLib.Logging;
 using RuriLib.Models.Bots;
+using RuriLib.Models.Proxies;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -213,7 +215,7 @@ namespace RuriLib.Blocks.Requests.Imap
 
             try
             {
-                await client.ConnectAsync(entry.Host, entry.Port, MailKit.Security.SecureSocketOptions.Auto, data.CancellationToken).ConfigureAwait(false);
+                await client.ConnectAsync(entry.Host, entry.Port, SecureSocketOptions.Auto, data.CancellationToken).ConfigureAwait(false);
                 data.Logger.Log($"Connected! SSL/TLS: {client.IsSecure}", LogColors.DarkOrchid);
                 await data.Providers.EmailDomains.TryAddImapServer(domain, entry).ConfigureAwait(false);
                 return true;
@@ -263,7 +265,7 @@ namespace RuriLib.Blocks.Requests.Imap
 
             data.SetObject("imapClient", client);
 
-            await client.ConnectAsync(host, port, MailKit.Security.SecureSocketOptions.Auto, data.CancellationToken).ConfigureAwait(false);
+            await client.ConnectAsync(host, port, SecureSocketOptions.Auto, data.CancellationToken).ConfigureAwait(false);
             data.Logger.Log($"Connected to {host} on port {port}. SSL/TLS: {client.IsSecure}", LogColors.DarkOrchid);
         }
 
@@ -467,10 +469,10 @@ Body:
 
                 return data.Proxy.Type switch
                 {
-                    Models.Proxies.ProxyType.Http => new HttpProxyClient(data.Proxy.Host, data.Proxy.Port, creds),
-                    Models.Proxies.ProxyType.Socks4 => new Socks4Client(data.Proxy.Host, data.Proxy.Port, creds),
-                    Models.Proxies.ProxyType.Socks4a => new Socks4aClient(data.Proxy.Host, data.Proxy.Port, creds),
-                    Models.Proxies.ProxyType.Socks5 => new Socks5Client(data.Proxy.Host, data.Proxy.Port, creds),
+                    ProxyType.Http => new HttpProxyClient(data.Proxy.Host, data.Proxy.Port, creds),
+                    ProxyType.Socks4 => new Socks4Client(data.Proxy.Host, data.Proxy.Port, creds),
+                    ProxyType.Socks4a => new Socks4aClient(data.Proxy.Host, data.Proxy.Port, creds),
+                    ProxyType.Socks5 => new Socks5Client(data.Proxy.Host, data.Proxy.Port, creds),
                     _ => throw new NotImplementedException(),
                 };
             }
@@ -478,10 +480,10 @@ Body:
             {
                 return data.Proxy.Type switch
                 {
-                    Models.Proxies.ProxyType.Http => new HttpProxyClient(data.Proxy.Host, data.Proxy.Port),
-                    Models.Proxies.ProxyType.Socks4 => new Socks4Client(data.Proxy.Host, data.Proxy.Port),
-                    Models.Proxies.ProxyType.Socks4a => new Socks4aClient(data.Proxy.Host, data.Proxy.Port),
-                    Models.Proxies.ProxyType.Socks5 => new Socks5Client(data.Proxy.Host, data.Proxy.Port),
+                    ProxyType.Http => new HttpProxyClient(data.Proxy.Host, data.Proxy.Port),
+                    ProxyType.Socks4 => new Socks4Client(data.Proxy.Host, data.Proxy.Port),
+                    ProxyType.Socks4a => new Socks4aClient(data.Proxy.Host, data.Proxy.Port),
+                    ProxyType.Socks5 => new Socks5Client(data.Proxy.Host, data.Proxy.Port),
                     _ => throw new NotImplementedException(),
                 };
             }

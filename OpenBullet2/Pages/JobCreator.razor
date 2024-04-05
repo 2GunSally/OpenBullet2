@@ -1,7 +1,8 @@
 ﻿@page "/jobs/create"
 @page "/jobs/create/{Type}"
+@using Microsoft.Extensions.Localization
 @using OpenBullet2.Core.Models.Jobs
-@inject Microsoft.Extensions.Localization.IStringLocalizer<JobCreator> Loc
+@inject IStringLocalizer<JobCreator> Loc
 @attribute [Authorize(Roles = "Admin,Guest")]
 
 <div class="mb-3">

@@ -1,24 +1,25 @@
-﻿using MailKit.Net.Smtp;
+﻿using MailKit;
 using MailKit.Net.Proxy;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 using RuriLib.Attributes;
+using RuriLib.Extensions;
 using RuriLib.Functions.Http;
+using RuriLib.Functions.Networking;
 using RuriLib.Functions.Smtp;
 using RuriLib.Http.Models;
 using RuriLib.Logging;
 using RuriLib.Models.Bots;
+using RuriLib.Models.Proxies;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-using MimeKit;
 using System.Linq;
-using RuriLib.Extensions;
-using RuriLib.Functions.Networking;
-using MailKit;
+using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RuriLib.Blocks.Requests.Smtp
 {
@@ -216,7 +217,7 @@ namespace RuriLib.Blocks.Requests.Smtp
 
             try
             {
-                await client.ConnectAsync(entry.Host, entry.Port, MailKit.Security.SecureSocketOptions.Auto, data.CancellationToken).ConfigureAwait(false);
+                await client.ConnectAsync(entry.Host, entry.Port, SecureSocketOptions.Auto, data.CancellationToken).ConfigureAwait(false);
                 data.Logger.Log($"Connected! SSL/TLS: {client.IsSecure}", LogColors.LightBrown);
                 
                 if (!client.Capabilities.HasFlag(SmtpCapabilities.Authentication))
@@ -274,7 +275,7 @@ namespace RuriLib.Blocks.Requests.Smtp
 
             data.SetObject("smtpClient", client);
 
-            await client.ConnectAsync(host, port, MailKit.Security.SecureSocketOptions.Auto, data.CancellationToken).ConfigureAwait(false);
+            await client.ConnectAsync(host, port, SecureSocketOptions.Auto, data.CancellationToken).ConfigureAwait(false);
             data.Logger.Log($"Connected to {host} on port {port}. SSL/TLS: {client.IsSecure}", LogColors.LightBrown);
         }
 
@@ -412,10 +413,10 @@ namespace RuriLib.Blocks.Requests.Smtp
 
                 return data.Proxy.Type switch
                 {
-                    Models.Proxies.ProxyType.Http => new HttpProxyClient(data.Proxy.Host, data.Proxy.Port, creds),
-                    Models.Proxies.ProxyType.Socks4 => new Socks4Client(data.Proxy.Host, data.Proxy.Port, creds),
-                    Models.Proxies.ProxyType.Socks4a => new Socks4aClient(data.Proxy.Host, data.Proxy.Port, creds),
-                    Models.Proxies.ProxyType.Socks5 => new Socks5Client(data.Proxy.Host, data.Proxy.Port, creds),
+                    ProxyType.Http => new HttpProxyClient(data.Proxy.Host, data.Proxy.Port, creds),
+                    ProxyType.Socks4 => new Socks4Client(data.Proxy.Host, data.Proxy.Port, creds),
+                    ProxyType.Socks4a => new Socks4aClient(data.Proxy.Host, data.Proxy.Port, creds),
+                    ProxyType.Socks5 => new Socks5Client(data.Proxy.Host, data.Proxy.Port, creds),
                     _ => throw new NotImplementedException(),
                 };
             }
@@ -423,10 +424,10 @@ namespace RuriLib.Blocks.Requests.Smtp
             {
                 return data.Proxy.Type switch
                 {
-                    Models.Proxies.ProxyType.Http => new HttpProxyClient(data.Proxy.Host, data.Proxy.Port),
-                    Models.Proxies.ProxyType.Socks4 => new Socks4Client(data.Proxy.Host, data.Proxy.Port),
-                    Models.Proxies.ProxyType.Socks4a => new Socks4aClient(data.Proxy.Host, data.Proxy.Port),
-                    Models.Proxies.ProxyType.Socks5 => new Socks5Client(data.Proxy.Host, data.Proxy.Port),
+                    ProxyType.Http => new HttpProxyClient(data.Proxy.Host, data.Proxy.Port),
+                    ProxyType.Socks4 => new Socks4Client(data.Proxy.Host, data.Proxy.Port),
+                    ProxyType.Socks4a => new Socks4aClient(data.Proxy.Host, data.Proxy.Port),
+                    ProxyType.Socks5 => new Socks5Client(data.Proxy.Host, data.Proxy.Port),
                     _ => throw new NotImplementedException(),
                 };
             }

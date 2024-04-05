@@ -1,5 +1,7 @@
 ﻿@page "/sharing"
-@inject Microsoft.Extensions.Localization.IStringLocalizer<Sharing> Loc
+@using Microsoft.Extensions.Localization
+@using RuriLib.Models.Configs
+@inject IStringLocalizer<Sharing> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 <div class="container-fluid">
@@ -40,7 +42,7 @@
 
 @if (gridLoad != null && !gridLoad.IsCanceled && gridLoad.IsCompleted)
 {
-    <GridComponent @ref="gridComponent" T="RuriLib.Models.Configs.Config" Grid="@grid" OnRowClicked="@OnConfigSelected"></GridComponent>
+    <GridComponent @ref="gridComponent" T="Config" Grid="@grid" OnRowClicked="@OnConfigSelected"></GridComponent>
 }
 else
 {

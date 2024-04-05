@@ -1,7 +1,8 @@
 ﻿@page "/configs"
+@using Microsoft.Extensions.Localization
 @using RuriLib.Models.Configs
 @implements IDisposable 
-@inject Microsoft.Extensions.Localization.IStringLocalizer<Configs> Loc
+@inject IStringLocalizer<Configs> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 <div class="container-fluid">

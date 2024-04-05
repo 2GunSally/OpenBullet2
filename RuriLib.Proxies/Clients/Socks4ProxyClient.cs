@@ -1,13 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Net.Sockets;
-
-using static RuriLib.Proxies.Clients.Socks4Constants;
+﻿using RuriLib.Proxies.Exceptions;
 using RuriLib.Proxies.Helpers;
-using RuriLib.Proxies.Exceptions;
-using System.Threading.Tasks;
+using System;
+using System.IO;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using static RuriLib.Proxies.Clients.Socks4Constants;
 
 namespace RuriLib.Proxies.Clients
 {

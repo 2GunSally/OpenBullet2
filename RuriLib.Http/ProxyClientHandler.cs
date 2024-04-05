@@ -1,17 +1,17 @@
-﻿using System;
+﻿using RuriLib.Proxies;
+using RuriLib.Proxies.Exceptions;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Net.Security;
+using System.Net.Sockets;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Security.Cryptography.X509Certificates;
-using RuriLib.Proxies;
-using System.Text;
-using RuriLib.Proxies.Exceptions;
-using System.Collections.Generic;
 
 namespace RuriLib.Http
 {

@@ -1,6 +1,9 @@
 ﻿@using RuriLib.Models.Jobs.Monitor.Triggers
+@using RuriLib.Parallelization
+@using Microsoft.Extensions.Localization
+@using RuriLib.Models.Conditions.Comparisons
 @inject IModalService ModalService
-@inject Microsoft.Extensions.Localization.IStringLocalizer<TriggerEdit> Loc 
+@inject IStringLocalizer<TriggerEdit> Loc 
 
 <EditForm Model="Trigger">
     @switch (Trigger)
@@ -62,7 +65,7 @@
         case JobStatusTrigger t:
             <span>@Loc["TriggerWhen"] @Loc["JobStatus"]</span>
             <InputSelect @bind-Value="t.Status">
-                @foreach (var status in Enum.GetNames(typeof(RuriLib.Parallelization.ParallelizerStatus)))
+                @foreach (var status in Enum.GetNames(typeof(ParallelizerStatus)))
                         {
                     <option value="@status">@status</option>
                         }
@@ -87,7 +90,7 @@
         case TimeElapsedTrigger t:
             <span>@Loc["TriggerWhen"] @Loc["TimeElapsed"]</span>
             <InputSelect @bind-Value="t.Comparison">
-                @foreach (var comp in Enum.GetNames(typeof(RuriLib.Models.Conditions.Comparisons.NumComparison)))
+                @foreach (var comp in Enum.GetNames(typeof(NumComparison)))
                         {
                     <option value="@comp">@comp</option>
                         }
@@ -101,7 +104,7 @@
         case TimeRemainingTrigger t:
             <span>@Loc["TriggerWhen"] @Loc["TimeRemaining"]</span>
             <InputSelect @bind-Value="t.Comparison">
-                @foreach (var comp in Enum.GetNames(typeof(RuriLib.Models.Conditions.Comparisons.NumComparison)))
+                @foreach (var comp in Enum.GetNames(typeof(NumComparison)))
                         {
                     <option value="@comp">@comp</option>
                         }

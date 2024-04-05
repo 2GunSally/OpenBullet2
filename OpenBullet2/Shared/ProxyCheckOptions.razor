@@ -1,14 +1,13 @@
 ﻿@using OpenBullet2.Core.Models.Jobs
-@using RuriLib.Services
+@using OpenBullet2.Core.Models.Settings
 @using OpenBullet2.Core.Entities
-@using OpenBullet2.Services
+@using Microsoft.Extensions.Localization
 @using OpenBullet2.Auth
-@using OpenBullet2.Core.Models.Settings 
 @inject RuriLibSettingsService RuriLibSettings
 @inject IProxyGroupRepository ProxyGroupRepo
 @inject AuthenticationStateProvider Auth
 @inject OpenBulletSettingsService OBSettingsService
-@inject Microsoft.Extensions.Localization.IStringLocalizer<ProxyCheckOptions> Loc
+@inject IStringLocalizer<ProxyCheckOptions> Loc
 
 <label style="color: orange;">@Loc["StartCondition"]</label>
 <br />

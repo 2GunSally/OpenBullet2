@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using OpenBullet2.Exceptions;
+using OpenBullet2.Core.Helpers;
 using OpenBullet2.Core.Repositories;
+using OpenBullet2.Core.Services;
+using OpenBullet2.Exceptions;
 using OpenBullet2.Services;
 using System;
 using System.Collections.Generic;
@@ -12,8 +14,6 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using OpenBullet2.Core.Helpers;
-using OpenBullet2.Core.Services;
 
 namespace OpenBullet2.Auth
 {

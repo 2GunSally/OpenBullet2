@@ -1,5 +1,6 @@
 ﻿@page "/plugins"
-@inject Microsoft.Extensions.Localization.IStringLocalizer<Plugins> Loc
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Plugins> Loc
 @attribute [Authorize(Roles = "Admin")]
 
 <div class="container-fluid">

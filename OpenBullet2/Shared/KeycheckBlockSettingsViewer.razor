@@ -1,6 +1,7 @@
 ﻿@using RuriLib.Models.Blocks.Custom
 @using RuriLib.Models.Blocks.Custom.Keycheck
-@inject Microsoft.Extensions.Localization.IStringLocalizer<KeycheckBlockSettingsViewer> Loc
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<KeycheckBlockSettingsViewer> Loc
 
 <EditForm Model="Block">
     <h6 class="font-weight-bold fg-custom">@Loc["Label"]:</h6>

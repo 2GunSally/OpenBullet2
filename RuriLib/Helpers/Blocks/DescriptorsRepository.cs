@@ -1,4 +1,5 @@
-﻿using RuriLib.Extensions;
+﻿using RuriLib.Attributes;
+using RuriLib.Extensions;
 using RuriLib.Models.Blocks;
 using RuriLib.Models.Blocks.Custom;
 using RuriLib.Models.Blocks.Parameters;
@@ -12,6 +13,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using BlockCategory = RuriLib.Attributes.BlockCategory;
+using Variable = RuriLib.Models.Variables.Variable;
 
 namespace RuriLib.Helpers.Blocks
 {
@@ -69,7 +72,7 @@ namespace RuriLib.Helpers.Blocks
             foreach (var type in types)
             {
                 // Check if the type has a BlockCategory attribute
-                var category = type.GetCustomAttribute<Attributes.BlockCategory>();
+                var category = type.GetCustomAttribute<BlockCategory>();
                 if (category == null) continue;
 
                 // Get the methods in the type
@@ -77,7 +80,7 @@ namespace RuriLib.Helpers.Blocks
                 foreach (var method in methods)
                 {
                     // Check if the methods has a Block attribute
-                    var attribute = method.GetCustomAttribute<Attributes.Block>();
+                    var attribute = method.GetCustomAttribute<Block>();
                     if (attribute == null) continue;
 
                     // Check if the descriptor already exists
@@ -97,7 +100,7 @@ namespace RuriLib.Helpers.Blocks
                         Parameters = method.GetParameters().Where(p => p.ParameterType != typeof(BotData))
                             .Select(BuildBlockParameter).ToDictionary(p => p.Name, p => p),
                         ReturnType = ToVariableType(method.ReturnType),
-                        Category = new BlockCategory
+                        Category = new Models.Blocks.BlockCategory
                         {
                             Name = category.name ?? type.Namespace.Split('.')[2],
                             Path = $"{type.Namespace}",
@@ -106,7 +109,7 @@ namespace RuriLib.Helpers.Blocks
                             ForegroundColor = category.foregroundColor,
                             BackgroundColor = category.backgroundColor
                         },
-                        Images = method.GetCustomAttributes<Attributes.BlockImage>()
+                        Images = method.GetCustomAttributes<BlockImage>()
                         .ToDictionary(a => a.id, a => new BlockImageInfo
                         {
                             Name = a.id.ToReadableName(),
@@ -131,7 +134,7 @@ namespace RuriLib.Helpers.Blocks
                 foreach (var method in methods)
                 {
                     // Check if the methods has a BlockAction attribute
-                    var attribute = method.GetCustomAttribute<Attributes.BlockAction>();
+                    var attribute = method.GetCustomAttribute<BlockAction>();
                     if (attribute == null) continue;
 
                     var id = attribute.parentBlockId;
@@ -156,7 +159,7 @@ namespace RuriLib.Helpers.Blocks
         {
             var parameter = ToBlockParameter(info);
             var variableParam = info.GetCustomAttribute<Attributes.Variable>();
-            var interpParam = info.GetCustomAttribute<Attributes.Interpolated>();
+            var interpParam = info.GetCustomAttribute<Interpolated>();
 
             if (variableParam != null)
             {
@@ -216,7 +219,7 @@ namespace RuriLib.Helpers.Blocks
 
         /// <summary>
         /// Casts a C# variable with a given <paramref name="name"/>, <paramref name="type"/>
-        /// and <paramref name="value"/> to a custom <see cref="Variable"/> object.
+        /// and <paramref name="value"/> to a custom <see cref="Models.Variables.Variable"/> object.
         /// </summary>
         public static Variable ToVariable(string name, Type type, dynamic value)
         {
@@ -249,7 +252,7 @@ namespace RuriLib.Helpers.Blocks
                 { typeof(string), () => new StringParameter
                     { 
                         DefaultValue = parameter.HasDefaultValue ? (string)parameter.DefaultValue : "",
-                        MultiLine = parameter.GetCustomAttribute<Attributes.MultiLine>() != null
+                        MultiLine = parameter.GetCustomAttribute<MultiLine>() != null
                     }
                 },
 
@@ -268,7 +271,7 @@ namespace RuriLib.Helpers.Blocks
                 { typeof(byte[]), () => new ByteArrayParameter() }
             };
 
-            var blockParamAttribute = parameter.GetCustomAttribute<Attributes.BlockParam>();
+            var blockParamAttribute = parameter.GetCustomAttribute<BlockParam>();
 
             // If it's one of the standard types
             if (dict.ContainsKey(parameter.ParameterType))

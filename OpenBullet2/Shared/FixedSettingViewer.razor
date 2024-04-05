@@ -1,7 +1,6 @@
-﻿@using RuriLib.Models.Blocks.Settings
-@using RuriLib.Extensions
-@using OpenBullet2.Shared
-@inject Microsoft.Extensions.Localization.IStringLocalizer<FixedSettingViewer> Loc
+﻿@using Microsoft.Extensions.Localization
+@using RuriLib.Models.Blocks.Settings
+@inject IStringLocalizer<FixedSettingViewer> Loc
  
 <EditForm Model="BlockSetting">
     <div style="text-align: left;">

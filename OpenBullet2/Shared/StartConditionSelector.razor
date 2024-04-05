@@ -1,5 +1,6 @@
-﻿@using RuriLib.Models.Jobs.StartConditions 
-@inject Microsoft.Extensions.Localization.IStringLocalizer<StartConditionSelector> Loc
+﻿@using RuriLib.Models.Jobs.StartConditions
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<StartConditionSelector> Loc
 
 <RadzenRadioButtonList @bind-Value="type" TValue="StartConditionType" Change="@((args) => Change(args))">
     <Items>

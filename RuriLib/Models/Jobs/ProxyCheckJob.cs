@@ -1,9 +1,9 @@
 ﻿using RuriLib.Functions.Http;
 using RuriLib.Logging;
 using RuriLib.Models.Proxies;
-using RuriLib.Services;
 using RuriLib.Parallelization;
 using RuriLib.Parallelization.Models;
+using RuriLib.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
