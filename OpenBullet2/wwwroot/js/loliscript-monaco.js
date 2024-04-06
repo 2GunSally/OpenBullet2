@@ -1,6 +1,6 @@
 ﻿function registerLoliScript() {
     // Register a new language
-    monaco.languages.register({ id: 'loliscript' });
+    monaco.languages.register({id: 'loliscript'});
 
     monaco.languages.setLanguageConfiguration('loliscript', {
         wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,

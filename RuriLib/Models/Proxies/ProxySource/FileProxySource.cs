@@ -6,59 +6,55 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RuriLib.Models.Proxies.ProxySources
+namespace RuriLib.Models.Proxies.ProxySources;
+
+public class FileProxySource : ProxySource
 {
-    public class FileProxySource : ProxySource
+    private AsyncLocker asyncLocker;
+
+    public FileProxySource(string fileName)
     {
-        public string FileName { get; set; }
-        private AsyncLocker asyncLocker;
+        FileName = fileName;
+        asyncLocker = new AsyncLocker();
+    }
 
-        public FileProxySource(string fileName)
+    public string FileName { get; set; }
+
+    public async override Task<IEnumerable<Proxy>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        string[] lines;
+        var supportedScripts = new[] { ".bat", ".ps1", ".sh" };
+        var fileExtension = (Path.GetExtension(FileName) ?? "").ToLower();
+        if (fileExtension.Length != 0 && supportedScripts.Contains(fileExtension))
         {
-            FileName = fileName;
-            asyncLocker = new();
+            // The file is a script.
+            // We will run the execute and read it's stdout for proxies.
+            // just like raw proxy files, one proxy per line
+            await asyncLocker.Acquire("ProxySourceReloadScriptFile", CancellationToken.None).ConfigureAwait(false);
+            var stdout = await RunScript.RunScriptAndGetStdOut(FileName).ConfigureAwait(false);
+            if (stdout is null) throw new Exception($"Failed to get stdout of {FileName}");
+            lines = stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            asyncLocker.Release("ProxySourceReloadScriptFile");
         }
+        else
+            lines = await File.ReadAllLinesAsync(FileName, cancellationToken);
 
-        public async override Task<IEnumerable<Proxy>> GetAllAsync(CancellationToken cancellationToken = default)
+        return lines
+            .Select(l =>
+                Proxy.TryParse(l.Trim(), out var proxy, DefaultType, DefaultUsername, DefaultPassword) ? proxy : null)
+            .Where(p => p != null);
+    }
+
+    public override void Dispose()
+    {
+        try
         {
-            string[] lines;
-            var supportedScripts = new[] { ".bat", ".ps1", ".sh" };
-            var fileExtension = (Path.GetExtension(FileName) ?? "").ToLower();
-            if (fileExtension.Length != 0 && supportedScripts.Contains(fileExtension))
-            {
-                // The file is a script.
-                // We will run the execute and read it's stdout for proxies.
-                // just like raw proxy files, one proxy per line
-                await asyncLocker.Acquire("ProxySourceReloadScriptFile", CancellationToken.None).ConfigureAwait(false);
-                var stdout = await RunScript.RunScriptAndGetStdOut(FileName).ConfigureAwait(false);
-                if (stdout is null)
-                {
-                    throw new Exception($"Failed to get stdout of {FileName}");
-                }
-                lines = stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                asyncLocker.Release("ProxySourceReloadScriptFile");
-            }
-            else
-            {
-                lines = await File.ReadAllLinesAsync(FileName, cancellationToken);
-            }
-
-            return lines
-                .Select(l => Proxy.TryParse(l.Trim(), out var proxy, DefaultType, DefaultUsername, DefaultPassword) ? proxy : null)
-                .Where(p => p != null);
+            asyncLocker.Dispose();
+            asyncLocker = null;
         }
-
-        public override void Dispose()
+        catch
         {
-            try
-            {
-                asyncLocker.Dispose();
-                asyncLocker = null;
-            }
-            catch
-            {
-                // ignored
-            }
+            // ignored
         }
     }
 }

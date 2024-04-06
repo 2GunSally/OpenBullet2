@@ -12,196 +12,188 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OpenBullet2.Shared
+namespace OpenBullet2.Shared;
+
+public partial class ProxyCheckJobViewer : IDisposable
 {
-    public partial class ProxyCheckJobViewer : IDisposable
+    private bool changingBots = false;
+    private Timer uiRefreshTimer;
+    [Parameter] public ProxyCheckJob Job { get; set; }
+
+    [Inject] private IModalService Modal { get; set; }
+    [Inject] private OpenBulletSettingsService OBSettingsService { get; set; }
+    [Inject] private MemoryJobLogger Logger { get; set; }
+    [Inject] private NavigationManager Nav { get; set; }
+
+    public void Dispose()
     {
-        [Parameter] public ProxyCheckJob Job { get; set; }
+        uiRefreshTimer?.Dispose();
+        RemoveEventHandlers();
+    }
 
-        [Inject] private IModalService Modal { get; set; }
-        [Inject] private OpenBulletSettingsService OBSettingsService { get; set; }
-        [Inject] private MemoryJobLogger Logger { get; set; }
-        [Inject] private NavigationManager Nav { get; set; }
+    protected override void OnInitialized() => AddEventHandlers();
 
-        private bool changingBots = false;
-        private Timer uiRefreshTimer;
-
-        protected override void OnInitialized() => AddEventHandlers();
-
-        protected override void OnAfterRender(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
         {
-            if (firstRender)
-            {
-                var interval = Math.Max(50, OBSettingsService.Settings.GeneralSettings.JobUpdateInterval);
-                uiRefreshTimer = new Timer(new TimerCallback(async _ => await InvokeAsync(StateHasChanged)),
-                    null, interval, interval);
-            }
+            var interval = Math.Max(50, OBSettingsService.Settings.GeneralSettings.JobUpdateInterval);
+            uiRefreshTimer = new Timer(async _ => await InvokeAsync(StateHasChanged),
+                null, interval, interval);
         }
+    }
 
-        private async Task ChangeBots()
+    private async Task ChangeBots()
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(BotsSelector.Bots), Job.Bots);
+
+        var modal = Modal.Show<BotsSelector>(Loc["EditBotsAmount"], parameters);
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
         {
-            var parameters = new ModalParameters();
-            parameters.Add(nameof(BotsSelector.Bots), Job.Bots);
+            var newAmount = (int)result.Data;
+            changingBots = true;
 
-            var modal = Modal.Show<BotsSelector>(Loc["EditBotsAmount"], parameters);
-            var result = await modal.Result;
+            await Job.ChangeBots(newAmount);
 
-            if (!result.Cancelled)
-            {
-                var newAmount = (int)result.Data;
-                changingBots = true;
-
-                await Job.ChangeBots(newAmount);
-
-                Job.Bots = newAmount;
-                changingBots = false;
-            }
+            Job.Bots = newAmount;
+            changingBots = false;
         }
+    }
 
-        private void ChangeOptions()
+    private void ChangeOptions() => Nav.NavigateTo($"jobs/edit/{Job.Id}");
+
+    private void LogResult(object sender, ResultDetails<ProxyCheckInput, Proxy> details)
+    {
+        var result = details.Result;
+
+        if (result.WorkingStatus == ProxyWorkingStatus.Working)
+            Logger.LogSuccess(Job.Id,
+                $"{Loc["ProxyChecked"]} ({result.Host}:{result.Port}) {Loc["withPing"]} {result.Ping} ms {Loc["andCountry"]} {result.Country}");
+        else
+            Logger.LogWarning(Job.Id, $"{Loc["ProxyChecked"]} ({result.Host}:{result.Port}) {Loc["asNotWorking"]}");
+    }
+
+    private void LogError(object sender, Exception ex) =>
+        Logger.LogError(Job.Id, $"{Loc["TaskManagerError"]} {ex.Message}");
+
+    private void LogTaskError(object sender, ErrorDetails<ProxyCheckInput> details)
+    {
+        var proxy = details.Item.Proxy;
+        Logger.LogError(Job.Id, $"{Loc["TaskError"]} ({proxy.Host}:{proxy.Port})! {details.Exception.Message}");
+    }
+
+    private void LogCompleted(object sender, EventArgs e) => Logger.LogInfo(Job.Id, Loc["CompletedMessage"]);
+
+    private async Task Start()
+    {
+        try
         {
-            Nav.NavigateTo($"jobs/edit/{Job.Id}");
+            Logger.LogInfo(Job.Id, Loc["StartedWaiting"]);
+            await Job.Start();
+            Logger.LogInfo(Job.Id, Loc["StartedChecking"]);
         }
-
-        private void LogResult(object sender, ResultDetails<ProxyCheckInput, Proxy> details)
+        catch (Exception ex)
         {
-            var result = details.Result;
-
-            if (result.WorkingStatus == ProxyWorkingStatus.Working)
-                Logger.LogSuccess(Job.Id, $"{Loc["ProxyChecked"]} ({result.Host}:{result.Port}) {Loc["withPing"]} {result.Ping} ms {Loc["andCountry"]} {result.Country}");
-            else
-                Logger.LogWarning(Job.Id, $"{Loc["ProxyChecked"]} ({result.Host}:{result.Port}) {Loc["asNotWorking"]}");
+            await js.AlertException(ex);
         }
+    }
 
-        private void LogError(object sender, Exception ex)
+    private async Task Stop()
+    {
+        try
         {
-            Logger.LogError(Job.Id, $"{Loc["TaskManagerError"]} {ex.Message}");
+            Logger.LogInfo(Job.Id, Loc["SoftStopMessage"]);
+            await Job.Stop();
         }
-
-        private void LogTaskError(object sender, ErrorDetails<ProxyCheckInput> details)
+        catch (Exception ex)
         {
-            var proxy = details.Item.Proxy;
-            Logger.LogError(Job.Id, $"{Loc["TaskError"]} ({proxy.Host}:{proxy.Port})! {details.Exception.Message}");
+            await js.AlertException(ex);
         }
+    }
 
-        private void LogCompleted(object sender, EventArgs e)
+    private async Task Abort()
+    {
+        try
         {
-            Logger.LogInfo(Job.Id, Loc["CompletedMessage"]);
+            Logger.LogInfo(Job.Id, Loc["HardStopMessage"]);
+            await Job.Abort();
         }
-
-        private async Task Start()
+        catch (Exception ex)
         {
-            try
-            {
-                Logger.LogInfo(Job.Id, Loc["StartedWaiting"]);
-                await Job.Start();
-                Logger.LogInfo(Job.Id, Loc["StartedChecking"]);
-            }
-            catch (Exception ex)
-            {
-                await js.AlertException(ex);
-            }
+            await js.AlertException(ex);
         }
+    }
 
-        private async Task Stop()
+    private async Task Pause()
+    {
+        try
         {
-            try
-            {
-                Logger.LogInfo(Job.Id, Loc["SoftStopMessage"]);
-                await Job.Stop();
-            }
-            catch (Exception ex)
-            {
-                await js.AlertException(ex);
-            }
+            Logger.LogInfo(Job.Id, Loc["PauseMessage"]);
+            await Job.Pause();
+            Logger.LogInfo(Job.Id, Loc["TaskManagerPaused"]);
         }
-
-        private async Task Abort()
+        catch (Exception ex)
         {
-            try
-            {
-                Logger.LogInfo(Job.Id, Loc["HardStopMessage"]);
-                await Job.Abort();
-            }
-            catch (Exception ex)
-            {
-                await js.AlertException(ex);
-            }
+            await js.AlertException(ex);
         }
+    }
 
-        private async Task Pause()
+    private async Task Resume()
+    {
+        try
         {
-            try
-            {
-                Logger.LogInfo(Job.Id, Loc["PauseMessage"]);
-                await Job.Pause();
-                Logger.LogInfo(Job.Id, Loc["TaskManagerPaused"]);
-            }
-            catch (Exception ex)
-            {
-                await js.AlertException(ex);
-            }
+            await Job.Resume();
+            Logger.LogInfo(Job.Id, Loc["ResumeMessage"]);
         }
-
-        private async Task Resume()
+        catch (Exception ex)
         {
-            try
-            {
-                await Job.Resume();
-                Logger.LogInfo(Job.Id, Loc["ResumeMessage"]);
-            }
-            catch (Exception ex)
-            {
-                await js.AlertException(ex);
-            }
+            await js.AlertException(ex);
         }
+    }
 
-        private async Task SkipWait()
+    private async Task SkipWait()
+    {
+        try
         {
-            try
-            {
-                Job.SkipWait();
-                Logger.LogInfo(Job.Id, Loc["SkippedWait"]);
-            }
-            catch (Exception ex)
-            {
-                await js.AlertException(ex);
-            }
+            Job.SkipWait();
+            Logger.LogInfo(Job.Id, Loc["SkippedWait"]);
         }
-
-        private void AddEventHandlers()
+        catch (Exception ex)
         {
-            if (OBSettingsService.Settings.GeneralSettings.EnableJobLogging)
-            {
-                Job.OnResult += LogResult;
-                Job.OnTaskError += LogTaskError;
-                Job.OnError += LogError;
-                Job.OnCompleted += LogCompleted;
-            }
+            await js.AlertException(ex);
         }
+    }
 
-        private void RemoveEventHandlers()
+    private void AddEventHandlers()
+    {
+        if (OBSettingsService.Settings.GeneralSettings.EnableJobLogging)
         {
-            try
-            {
-                Job.OnResult -= LogResult;
-                Job.OnTaskError -= LogTaskError;
-                Job.OnError -= LogError;
-                Job.OnCompleted -= LogCompleted;
-            }
-            catch
-            {
-
-            }
+            Job.OnResult += LogResult;
+            Job.OnTaskError += LogTaskError;
+            Job.OnError += LogError;
+            Job.OnCompleted += LogCompleted;
         }
+    }
 
-        public void Dispose()
+    private void RemoveEventHandlers()
+    {
+        try
         {
-            uiRefreshTimer?.Dispose();
-            RemoveEventHandlers();
+            Job.OnResult -= LogResult;
+            Job.OnTaskError -= LogTaskError;
+            Job.OnError -= LogError;
+            Job.OnCompleted -= LogCompleted;
         }
+        catch
+        {
+        }
+    }
 
-        ~ProxyCheckJobViewer()
-            => Dispose();
+    ~ProxyCheckJobViewer()
+    {
+        Dispose();
     }
 }

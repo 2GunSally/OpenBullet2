@@ -3,28 +3,31 @@
 @inject IStringLocalizer<CustomInputQuestion> Loc
 
 <EditForm Model="answer">
-    <label>@Question</label>
-    <InputComboBox @bind-Value="answer" GetSuggestions="GetSuggestions" />
+  <label>@Question</label>
+  <InputComboBox @bind-Value="answer" GetSuggestions="GetSuggestions"/>
 </EditForm>
 
 <button class="btn btn-outline-success mt-2" type="submit" @onclick="Validate">@Loc["Ok"]</button>
 
 @code {
-    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
-    [Parameter] public string Question { get; set; }
-    [Parameter] public string DefaultAnswer { get; set; }
-    private string answer = string.Empty;
+  [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+  [Parameter] public string Question { get; set; }
+  [Parameter] public string DefaultAnswer { get; set; }
+  private string answer = string.Empty;
 
-    protected override void OnParametersSet()
-    {
-        answer = DefaultAnswer.Split(',').First();
-    }
+  protected override void OnParametersSet()
+  {
+    answer = DefaultAnswer.Split(',').First();
+  }
 
-    private Task<IEnumerable<string>> GetSuggestions(string partial)
-        => Task.FromResult(DefaultAnswer.Split(',') as IEnumerable<string>);
+  private Task<IEnumerable<string>> GetSuggestions(string partial)
+  {
+    return Task.FromResult(DefaultAnswer.Split(',') as IEnumerable<string>);
+  }
 
-    private void Validate()
-    {
-        BlazoredModal.Close(ModalResult.Ok(answer));
-    }
+  private void Validate()
+  {
+    BlazoredModal.Close(ModalResult.Ok(answer));
+  }
+
 }

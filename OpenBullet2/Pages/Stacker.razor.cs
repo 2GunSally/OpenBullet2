@@ -9,61 +9,57 @@ using RuriLib.Models.Configs;
 using System;
 using System.Threading.Tasks;
 
-namespace OpenBullet2.Pages
+namespace OpenBullet2.Pages;
+
+public partial class Stacker
 {
-    public partial class Stacker
+    private Config config;
+    private BlockInstance selectedBlock;
+    private StackViewer stackViewer;
+    [Inject] private BrowserConsoleLogger OBLogger { get; set; }
+    [Inject] private ConfigService ConfigService { get; set; }
+    [Inject] private NavigationManager Nav { get; set; }
+
+    protected async override Task OnInitializedAsync()
     {
-        [Inject] private BrowserConsoleLogger OBLogger { get; set; }
-        [Inject] private ConfigService ConfigService { get; set; }
-        [Inject] private NavigationManager Nav { get; set; }
+        config = ConfigService.SelectedConfig;
 
-        private Config config;
-        private BlockInstance selectedBlock;
-        private StackViewer stackViewer;
-
-        protected override async Task OnInitializedAsync()
+        if (config == null)
         {
-            config = ConfigService.SelectedConfig;
-
-            if (config == null)
-            {
-                Nav.NavigateTo("/configs");
-                return;
-            }
-
-            try
-            {
-                config.ChangeMode(ConfigMode.Stack);
-            }
-            catch (Exception ex)
-            {
-                await OBLogger.LogException(ex);
-                await js.AlertError(ex.GetType().Name, ex.Message);
-                Nav.NavigateTo("config/edit/lolicode");
-            }
-
-            base.OnInitialized();
+            Nav.NavigateTo("/configs");
+            return;
         }
 
-        private async Task SelectedBlock(BlockInstance block)
+        try
         {
-            // If we're switching between 2 blocks that have a Monaco Editor, do this to force a refresh
-            // of the component, otherwise the text in the editor does not update
-            if (selectedBlock != null && HasMonacoEditor(selectedBlock) &&
-                block != null && HasMonacoEditor(block))
-            {
-                selectedBlock = null;
-                StateHasChanged();
-                await Task.Delay(1);
-                selectedBlock = block;
-            }
-            else
-            {
-                selectedBlock = block;
-            }
+            config.ChangeMode(ConfigMode.Stack);
+        }
+        catch (Exception ex)
+        {
+            await OBLogger.LogException(ex);
+            await js.AlertError(ex.GetType().Name, ex.Message);
+            Nav.NavigateTo("config/edit/lolicode");
         }
 
-        private bool HasMonacoEditor(BlockInstance block)
-            => block is LoliCodeBlockInstance or ScriptBlockInstance;
+        base.OnInitialized();
     }
+
+    private async Task SelectedBlock(BlockInstance block)
+    {
+        // If we're switching between 2 blocks that have a Monaco Editor, do this to force a refresh
+        // of the component, otherwise the text in the editor does not update
+        if (selectedBlock != null && HasMonacoEditor(selectedBlock) &&
+            block != null && HasMonacoEditor(block))
+        {
+            selectedBlock = null;
+            StateHasChanged();
+            await Task.Delay(1);
+            selectedBlock = block;
+        }
+        else
+            selectedBlock = block;
+    }
+
+    private bool HasMonacoEditor(BlockInstance block)
+        => block is LoliCodeBlockInstance or ScriptBlockInstance;
 }

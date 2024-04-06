@@ -10,44 +10,45 @@
 
 <p>@Loc["NotAuthedPleaseLogin"]</p>
 <EditForm Model="user">
-    <label>@Loc["Username"]</label>
-    <InputText @bind-Value="user.Username" />
-    <label>@Loc["Password"]</label>
-    <InputText type="password" @bind-Value="user.Password" />
-    <button type="submit" class="btn btn-outline-primary" @onclick="ValidateUser">@Loc["Login"]</button>
+  <label>@Loc["Username"]</label>
+  <InputText @bind-Value="user.Username"/>
+  <label>@Loc["Password"]</label>
+  <InputText type="password" @bind-Value="user.Password"/>
+  <button type="submit" class="btn btn-outline-primary" @onclick="ValidateUser">@Loc["Login"]</button>
 </EditForm>
 
 @code {
-    private class User
+
+  private class User
+  {
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+  }
+
+  private User user = new();
+
+  private async Task ValidateUser()
+  {
+    var ip = IPAddress.Parse("127.0.0.1");
+
+    try
     {
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
+      // This will throw if OB2 is behind a reverse proxy
+      ip = ContextAccessor.HttpContext.Connection.RemoteIpAddress;
+    }
+    catch
+    {
     }
 
-    private User user = new User();
-
-    private async Task ValidateUser()
+    try
     {
-        IPAddress ip = IPAddress.Parse("127.0.0.1");
-
-        try
-        {
-            // This will throw if OB2 is behind a reverse proxy
-            ip = ContextAccessor.HttpContext.Connection.RemoteIpAddress;
-        }
-        catch
-        {
-
-        }
-
-        try
-        {
-            await ((OBAuthenticationStateProvider)Auth).AuthenticateUser(user.Username, user.Password, ip);
-            Nav.NavigateTo("/");
-        }
-        catch (Exception ex)
-        {
-            await js.AlertException(ex);
-        }
+      await ((OBAuthenticationStateProvider)Auth).AuthenticateUser(user.Username, user.Password, ip);
+      Nav.NavigateTo("/");
     }
+    catch (Exception ex)
+    {
+      await js.AlertException(ex);
+    }
+  }
+
 }

@@ -1,10 +1,16 @@
 # RuriLib.Http
-This is a library that provides a custom HTTP client, in addition to an `HttpMessageHandler` to be used with the default `HttpClient` of `System.Net`. It sits on top of [RuriLib.Proxies](https://github.com/openbullet/OpenBullet2/tree/master/RuriLib.Proxies) which provides a layer 4 proxied connection.
+
+This is a library that provides a custom HTTP client, in addition to an `HttpMessageHandler` to be used with the
+default `HttpClient` of `System.Net`. It sits on top
+of [RuriLib.Proxies](https://github.com/openbullet/OpenBullet2/tree/master/RuriLib.Proxies) which provides a layer 4
+proxied connection.
 
 # Installation
+
 [NuGet](https://nuget.org/packages/RuriLib.Http): `dotnet add package RuriLib.Http`
 
 # Example (Custom Client)
+
 ```csharp
 using RuriLib.Http;
 using RuriLib.Http.Models;
@@ -66,7 +72,9 @@ namespace HttpDemo
 ```
 
 # Example (HttpClient)
-This example is equivalent to the one above, but it uses the default `HttpClient` so you can take advantage of the API you are already familiar with.
+
+This example is equivalent to the one above, but it uses the default `HttpClient` so you can take advantage of the API
+you are already familiar with.
 
 ```csharp
 using RuriLib.Http;
@@ -131,4 +139,6 @@ namespace HttpDemo
 ```
 
 # Credits
-Some portions of the code were the work of Ruslan Khuduev and Artem Dontsov, to which I am grateful, all rights are reserved to them. Their work is under the MIT license.
+
+Some portions of the code were the work of Ruslan Khuduev and Artem Dontsov, to which I am grateful, all rights are
+reserved to them. Their work is under the MIT license.

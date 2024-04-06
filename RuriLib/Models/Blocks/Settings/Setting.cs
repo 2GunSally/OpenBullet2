@@ -1,10 +1,8 @@
-﻿namespace RuriLib.Models.Blocks.Settings
+﻿namespace RuriLib.Models.Blocks.Settings;
+
+/// <summary>
+///     Generic abstract setting.
+/// </summary>
+public abstract class Setting
 {
-    /// <summary>
-    /// Generic abstract setting.
-    /// </summary>
-    public abstract class Setting
-    {
-        
-    }
 }

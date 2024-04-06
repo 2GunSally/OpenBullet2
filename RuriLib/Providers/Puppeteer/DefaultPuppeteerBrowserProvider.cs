@@ -1,14 +1,13 @@
 ﻿using RuriLib.Services;
 
-namespace RuriLib.Providers.Puppeteer
-{
-    public class DefaultPuppeteerBrowserProvider : IPuppeteerBrowserProvider
-    {
-        public string ChromeBinaryLocation { get; }
+namespace RuriLib.Providers.Puppeteer;
 
-        public DefaultPuppeteerBrowserProvider(RuriLibSettingsService settings)
-        {
-            ChromeBinaryLocation = settings.RuriLibSettings.PuppeteerSettings.ChromeBinaryLocation;
-        }
+public class DefaultPuppeteerBrowserProvider : IPuppeteerBrowserProvider
+{
+    public DefaultPuppeteerBrowserProvider(RuriLibSettingsService settings)
+    {
+        ChromeBinaryLocation = settings.RuriLibSettings.PuppeteerSettings.ChromeBinaryLocation;
     }
+
+    public string ChromeBinaryLocation { get; }
 }

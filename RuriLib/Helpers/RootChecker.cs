@@ -1,30 +1,27 @@
 ﻿using System.Runtime.InteropServices;
 using System.Security.Principal;
 
-namespace RuriLib.Helpers
+namespace RuriLib.Helpers;
+
+public static class RootChecker
 {
-    public static class RootChecker
+    [DllImport("libc")]
+    private static extern uint geteuid();
+
+    public static bool IsRoot()
     {
-        [DllImport("libc")]
-        private static extern uint geteuid();
-
-        public static bool IsRoot()
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                using var identity = WindowsIdentity.GetCurrent();
-                var principal = new WindowsPrincipal(identity);
-                var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            using var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
 
-                return isAdmin;
-            }
-            else
-            {
-                return geteuid() == 0;
-            }
+            return isAdmin;
         }
 
-        public static bool IsUnixRoot()
-            => !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && geteuid() == 0;
+        return geteuid() == 0;
     }
+
+    public static bool IsUnixRoot()
+        => !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && geteuid() == 0;
 }

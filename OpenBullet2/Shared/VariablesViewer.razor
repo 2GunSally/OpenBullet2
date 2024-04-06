@@ -6,42 +6,44 @@
 
 <h5>@Loc["Variables"]</h5>
 <div class="debugger-log">
-    @if (OBSettingsService.Settings.GeneralSettings.GroupCapturesInDebugger)
+  @if (OBSettingsService.Settings.GeneralSettings.GroupCapturesInDebugger)
+  {
+    @foreach (var variable in variables.Where(v => !v.MarkedForCapture))
     {
-        @foreach (var variable in variables.Where(v => !v.MarkedForCapture))
-        {
-            <p style="color: yellow">
-                @variable.Name (@variable.Type) = @variable.AsString()
-            </p>
-        }
-        @foreach (var variable in variables.Where(v => v.MarkedForCapture))
-        {
-            <p style="color: tomato">
-                @variable.Name (@variable.Type) = @variable.AsString()
-            </p>
-        }
+      <p style="color: yellow">
+        @variable.Name (@variable.Type) = @variable.AsString()
+      </p>
     }
-    else
+
+    @foreach (var variable in variables.Where(v => v.MarkedForCapture))
     {
-        @foreach (var variable in variables)
-        {
-            <p style="color: @(variable.MarkedForCapture ? "tomato" : "yellow");">
-                @variable.Name (@variable.Type) = @variable.AsString()
-            </p>
-        }
+      <p style="color: tomato">
+        @variable.Name (@variable.Type) = @variable.AsString()
+      </p>
     }
+  }
+  else
+  {
+    @foreach (var variable in variables)
+    {
+      <p style="color: @(variable.MarkedForCapture ? "tomato" : "yellow");">
+        @variable.Name (@variable.Type) = @variable.AsString()
+      </p>
+    }
+  }
 </div>
 
 @code {
-    private List<Variable> variables;
+  private List<Variable> variables;
 
-    protected override void OnInitialized()
-    {
-        variables = VolatileSettings.DebuggerOptions.Variables;
-    }
+  protected override void OnInitialized()
+  {
+    variables = VolatileSettings.DebuggerOptions.Variables;
+  }
 
-    public void Refresh()
-    {
-        StateHasChanged();
-    }
+  public void Refresh()
+  {
+    StateHasChanged();
+  }
+
 }

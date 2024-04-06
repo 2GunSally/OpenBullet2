@@ -22,119 +22,111 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpenBullet2.Shared.Forms
+namespace OpenBullet2.Shared.Forms;
+
+public partial class ConfigSelector
 {
-    public partial class ConfigSelector
+    private List<Config> configs = new();
+    private CGrid<Config> grid;
+
+    private GridComponent<Config> gridComponent;
+    private Task gridLoad;
+    private Config selectedConfig;
+    private int uid = -1;
+    [Inject] private ConfigService ConfigService { get; set; }
+    [Inject] private PluginRepository PluginRepo { get; set; }
+    [Inject] private IModalService ModalService { get; set; }
+    [Inject] private AuthenticationStateProvider Auth { get; set; }
+    [Inject] private VolatileSettingsService VolatileSettings { get; set; }
+
+    [CascadingParameter] private BlazoredModalInstance BlazoredModal { get; set; }
+
+    protected async override Task OnParametersSetAsync()
     {
-        [Inject] private ConfigService ConfigService { get; set; }
-        [Inject] private PluginRepository PluginRepo { get; set; }
-        [Inject] private IModalService ModalService { get; set; }
-        [Inject] private AuthenticationStateProvider Auth { get; set; }
-        [Inject] private VolatileSettingsService VolatileSettings { get; set; }
+        uid = await ((OBAuthenticationStateProvider)Auth).GetCurrentUserId();
 
-        [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+        configs = ConfigService.Configs.OrderByDescending(c => c.Metadata.LastModified).ToList();
 
-        private List<Config> configs = new();
-        private Config selectedConfig;
-        private int uid = -1;
-
-        private GridComponent<Config> gridComponent;
-        private CGrid<Config> grid;
-        private Task gridLoad;
-
-        protected async override Task OnParametersSetAsync()
+        Action<IGridColumnCollection<Config>> columns = c =>
         {
-            uid = await ((OBAuthenticationStateProvider)Auth).GetCurrentUserId();
+            c.Add(x => x.Metadata.Name).Titled(Loc["Name"]).Encoded(false).Sanitized(false)
+                .RenderValueAs(x =>
+                    $"<div class=\"grid-element-with-icon\"><img src=\"data:image/png;base64,{x.Metadata.Base64Image}\"/><span>{x.Metadata.Name}</span></div>");
+            c.Add(x => x.Metadata.Author).Titled(Loc["Author"]);
+            c.Add(x => x.Metadata.Category).Titled(Loc["Category"]);
+            c.Add(x => x.IsRemote).Titled(Loc["Remote"]);
+            c.Add(x => x.Settings.ProxySettings.UseProxies).Titled(Loc["Proxies"]);
+            c.Add(x => x.Settings.DataSettings.AllowedWordlistTypesString).Titled(Loc["Wordlists"]);
+            c.Add(x => x.Metadata.CreationDate).Titled(Loc["CreationDate"]).SetFilterWidgetType("DateTimeLocal")
+                .Format("{0:dd/MM/yyyy HH:mm}");
+            c.Add(x => x.Metadata.LastModified).Titled(Loc["LastModified"]).SetFilterWidgetType("DateTimeLocal")
+                .Format("{0:dd/MM/yyyy HH:mm}")
+                .Sortable(true).SortInitialDirection(GridSortDirection.Descending);
+        };
 
-            configs = ConfigService.Configs.OrderByDescending(c => c.Metadata.LastModified).ToList();
+        var query = new QueryDictionary<StringValues>();
+        query.Add("grid-page", "1");
 
-            Action<IGridColumnCollection<Config>> columns = c =>
-            {
-                c.Add(x => x.Metadata.Name).Titled(Loc["Name"]).Encoded(false).Sanitized(false)
-                    .RenderValueAs(x => $"<div class=\"grid-element-with-icon\"><img src=\"data:image/png;base64,{x.Metadata.Base64Image}\"/><span>{x.Metadata.Name}</span></div>");
-                c.Add(x => x.Metadata.Author).Titled(Loc["Author"]);
-                c.Add(x => x.Metadata.Category).Titled(Loc["Category"]);
-                c.Add(x => x.IsRemote).Titled(Loc["Remote"]);
-                c.Add(x => x.Settings.ProxySettings.UseProxies).Titled(Loc["Proxies"]);
-                c.Add(x => x.Settings.DataSettings.AllowedWordlistTypesString).Titled(Loc["Wordlists"]);
-                c.Add(x => x.Metadata.CreationDate).Titled(Loc["CreationDate"]).SetFilterWidgetType("DateTimeLocal").Format("{0:dd/MM/yyyy HH:mm}");
-                c.Add(x => x.Metadata.LastModified).Titled(Loc["LastModified"]).SetFilterWidgetType("DateTimeLocal").Format("{0:dd/MM/yyyy HH:mm}")
-                    .Sortable(true).SortInitialDirection(GridSortDirection.Descending);
-            };
+        var client = new GridClient<Config>(q => GetGridRows(columns, q), query, false, "configsGrid", columns,
+                CultureInfo.CurrentCulture)
+            .Sortable()
+            .Filterable()
+            .ChangePageSize(true)
+            .WithMultipleFilters()
+            .SetKeyboard(true)
+            .Selectable(true, false, false);
+        grid = client.Grid;
 
-            var query = new QueryDictionary<StringValues>();
-            query.Add("grid-page", "1");
+        // Try to set a previous filter
+        if (VolatileSettings.GridQueries.ContainsKey((uid, "configsGrid")))
+            grid.Query = VolatileSettings.GridQueries[(uid, "configsGrid")];
 
-            var client = new GridClient<Config>(q => GetGridRows(columns, q), query, false, "configsGrid", columns, CultureInfo.CurrentCulture)
-                .Sortable()
-                .Filterable()
-                .ChangePageSize(true)
-                .WithMultipleFilters()
-                .SetKeyboard(true)
-                .Selectable(true, false, false);
-            grid = client.Grid;
+        // Set new items to grid
+        gridLoad = client.UpdateGrid();
+        await gridLoad;
+    }
 
-            // Try to set a previous filter
-            if (VolatileSettings.GridQueries.ContainsKey((uid, "configsGrid")))
-            {
-                grid.Query = VolatileSettings.GridQueries[(uid, "configsGrid")];
-            }
+    private ItemsDTO<Config> GetGridRows(Action<IGridColumnCollection<Config>> columns,
+        QueryDictionary<StringValues> query)
+    {
+        VolatileSettings.GridQueries[(uid, "configsGrid")] = query;
 
-            // Set new items to grid
-            gridLoad = client.UpdateGrid();
-            await gridLoad;
+        var server = new GridServer<Config>(configs, new QueryCollection(query),
+            true, "configsGrid", columns, 15).Sortable().Filterable().WithMultipleFilters();
+
+        // Return items to displays
+        return server.ItemsToDisplay;
+    }
+
+    protected void OnConfigSelected(object item)
+    {
+        if (item.GetType() == typeof(Config))
+        {
+            selectedConfig = (Config)item;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Select()
+    {
+        if (selectedConfig == null)
+        {
+            await js.AlertError(Loc["Uh-Oh"], Loc["NoConfigSelected"]);
+            return;
         }
 
-        private ItemsDTO<Config> GetGridRows(Action<IGridColumnCollection<Config>> columns,
-                QueryDictionary<StringValues> query)
-        {
-            VolatileSettings.GridQueries[(uid, "configsGrid")] = query;
+        // Check if we have all required plugins
+        var loadedPlugins = PluginRepo.GetPlugins();
+        if (selectedConfig.Metadata.Plugins != null)
+            foreach (var plugin in selectedConfig.Metadata.Plugins)
+                if (!loadedPlugins.Any(p => p.FullName == plugin))
+                    if (!await js.Confirm(Loc["MissingPlugin"], $"{Loc["MissingPluginText"]}: {plugin}", Loc["Cancel"]))
+                        return;
 
-            var server = new GridServer<Config>(configs, new QueryCollection(query),
-                true, "configsGrid", columns, 15).Sortable().Filterable().WithMultipleFilters();
-
-            // Return items to displays
-            return server.ItemsToDisplay;
-        }
-
-        protected void OnConfigSelected(object item)
-        {
-            if (item.GetType() == typeof(Config))
-            {
-                selectedConfig = (Config)item;
-                StateHasChanged();
-            }
-        }
-
-        private async Task Select()
-        {
-            if (selectedConfig == null)
-            {
-                await js.AlertError(Loc["Uh-Oh"], Loc["NoConfigSelected"]);
+        if (selectedConfig.HasCSharpCode())
+            if (!await js.Confirm(Loc["Danger"], Loc["DangerousConfig"]))
                 return;
-            }
 
-            // Check if we have all required plugins
-            var loadedPlugins = PluginRepo.GetPlugins();
-            if (selectedConfig.Metadata.Plugins != null)
-            {
-                foreach (var plugin in selectedConfig.Metadata.Plugins)
-                {
-                    if (!loadedPlugins.Any(p => p.FullName == plugin))
-                    {
-                        if (!await js.Confirm(Loc["MissingPlugin"], $"{Loc["MissingPluginText"]}: {plugin}", Loc["Cancel"]))
-                            return;
-                    }
-                }
-            }
-
-            if (selectedConfig.HasCSharpCode())
-            {
-                if (!await js.Confirm(Loc["Danger"], Loc["DangerousConfig"]))
-                    return;
-            }
-
-            BlazoredModal.Close(ModalResult.Ok(selectedConfig));
-        }
+        BlazoredModal.Close(ModalResult.Ok(selectedConfig));
     }
 }

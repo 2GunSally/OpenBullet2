@@ -3,32 +3,33 @@
 
 @if (selectedGroup is not null)
 {
-    <EditForm Model="Groups">
-        <InputSelect @bind-Value="selectedGroup">
-            @foreach (var group in Groups)
-            {
-                <option value="@group">@group.Name</option>
-            }
-        </InputSelect>
-    </EditForm>
+  <EditForm Model="Groups">
+    <InputSelect @bind-Value="selectedGroup">
+      @foreach (var group in Groups)
+      {
+        <option value="@group">@group.Name</option>
+      }
+    </InputSelect>
+  </EditForm>
 }
 
 <button class="btn btn-success mt-2" @onclick="Ok">Ok</button>
 
 @code {
 
-    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
-    [Parameter] public IEnumerable<ProxyGroupEntity> Groups { get; set; }
-    private ProxyGroupEntity selectedGroup = null;
+  [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+  [Parameter] public IEnumerable<ProxyGroupEntity> Groups { get; set; }
+  private ProxyGroupEntity selectedGroup;
 
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-        selectedGroup = Groups.First();
-    }
+  protected override void OnParametersSet()
+  {
+    base.OnParametersSet();
+    selectedGroup = Groups.First();
+  }
 
-    private void Ok()
-    {
-        BlazoredModal.Close(ModalResult.Ok(selectedGroup));
-    }
+  private void Ok()
+  {
+    BlazoredModal.Close(ModalResult.Ok(selectedGroup));
+  }
+
 }

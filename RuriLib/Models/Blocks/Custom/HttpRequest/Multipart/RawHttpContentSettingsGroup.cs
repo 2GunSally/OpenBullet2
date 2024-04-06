@@ -1,20 +1,16 @@
 ﻿using RuriLib.Models.Blocks.Settings;
 using System;
 
-namespace RuriLib.Models.Blocks.Custom.HttpRequest.Multipart
+namespace RuriLib.Models.Blocks.Custom.HttpRequest.Multipart;
+
+public class RawHttpContentSettingsGroup : HttpContentSettingsGroup
 {
-    public class RawHttpContentSettingsGroup : HttpContentSettingsGroup
+    public RawHttpContentSettingsGroup()
     {
-        public BlockSetting Data { get; set; }
+        Data = new BlockSetting { Name = "data", FixedSetting = new ByteArraySetting { Value = Array.Empty<byte>() } };
 
-        public RawHttpContentSettingsGroup()
-        {
-            Data = new BlockSetting() {
-                Name = "data", 
-                FixedSetting = new ByteArraySetting { Value = Array.Empty<byte>() }
-            };
-
-            ((StringSetting)ContentType.FixedSetting).Value = "application/octet-stream";
-        }
+        ((StringSetting)ContentType.FixedSetting).Value = "application/octet-stream";
     }
+
+    public BlockSetting Data { get; set; }
 }

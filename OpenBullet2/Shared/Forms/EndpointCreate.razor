@@ -4,22 +4,23 @@
 @inject IStringLocalizer<EndpointCreate> Loc
 
 <EditForm Model="endpoint">
-    <label>@Loc["Route"]</label>
-    <InputText @bind-Value="endpoint.Route" />
+  <label>@Loc["Route"]</label>
+  <InputText @bind-Value="endpoint.Route"/>
 
-    <label>@Loc["ApiKeys"] (@Loc["onePerLine"])</label>
-    <InputListOfStrings @bind-List="endpoint.ApiKeys" />
+  <label>@Loc["ApiKeys"] (@Loc["onePerLine"])</label>
+  <InputListOfStrings @bind-List="endpoint.ApiKeys"/>
 
-    <button type="submit" class="btn btn-outline-success mt-2" @onclick="Create">@Loc["Create"]</button>
+  <button type="submit" class="btn btn-outline-success mt-2" @onclick="Create">@Loc["Create"]</button>
 </EditForm>
 
 @code {
 
-    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
-    private Endpoint endpoint = new();
+  [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+  private readonly Endpoint endpoint = new();
 
-    private void Create()
-    {
-        BlazoredModal.Close(ModalResult.Ok(endpoint));
-    }
+  private void Create()
+  {
+    BlazoredModal.Close(ModalResult.Ok(endpoint));
+  }
+
 }

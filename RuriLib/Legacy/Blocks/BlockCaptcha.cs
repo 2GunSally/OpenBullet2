@@ -4,44 +4,37 @@ using RuriLib.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace RuriLib.Legacy.Blocks
+namespace RuriLib.Legacy.Blocks;
+
+/// <summary>
+///     A block that can solve captcha challenges.
+/// </summary>
+public abstract class BlockCaptcha : BlockBase
 {
-    /// <summary>
-    /// A block that can solve captcha challenges.
-    /// </summary>
-    public abstract class BlockCaptcha : BlockBase
+    /// <summary>The balance of the account of the captcha-solving service.</summary>
+    [JsonIgnore]
+    public decimal Balance { get; set; }
+
+    /// <inheritdoc />
+    public async override Task Process(LSGlobals ls)
     {
-        /// <summary>The balance of the account of the captcha-solving service.</summary>
-        [JsonIgnore]
-        public decimal Balance { get; set; } = 0;
+        var data = ls.BotData;
+        await base.Process(ls);
 
-        /// <inheritdoc />
-        public override async Task Process(LSGlobals ls)
-        {
-            var data = ls.BotData;
-            await base.Process(ls);
+        var provider = data.Providers.Captcha;
 
-            var provider = data.Providers.Captcha;
+        // If bypass balance check, skip this method.
+        if (!provider.CheckBalanceBeforeSolving) return;
 
-            // If bypass balance check, skip this method.
-            if (!provider.CheckBalanceBeforeSolving)
-            {
-                return;
-            }
+        // Get balance. If balance is under a certain threshold, don't ask for captcha solve
+        Balance = 0; // Reset it or the block will save it for future calls
+        data.Logger.Log("Checking balance...", LogColors.White);
 
-            // Get balance. If balance is under a certain threshold, don't ask for captcha solve
-            Balance = 0; // Reset it or the block will save it for future calls
-            data.Logger.Log("Checking balance...", LogColors.White);
+        Balance = await provider.GetBalanceAsync();
 
-            Balance = await provider.GetBalanceAsync();
+        if (Balance <= 0) throw new Exception($"[{provider.ServiceType}] Bad token/credentials or zero balance!");
 
-            if (Balance <= 0)
-            {
-                throw new Exception($"[{provider.ServiceType}] Bad token/credentials or zero balance!");
-            }
-
-            data.Logger.Log($"[{provider.ServiceType}] Current Balance: ${Balance}", LogColors.GreenYellow);
-            data.CaptchaCredit = Balance;
-        }
+        data.Logger.Log($"[{provider.ServiceType}] Current Balance: ${Balance}", LogColors.GreenYellow);
+        data.CaptchaCredit = Balance;
     }
 }

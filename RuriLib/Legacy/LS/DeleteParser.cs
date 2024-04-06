@@ -5,82 +5,73 @@ using RuriLib.Logging;
 using System;
 using System.Linq;
 
-namespace RuriLib.Legacy.LS
+namespace RuriLib.Legacy.LS;
+
+/// <summary>
+///     Parses a DELETE command.
+/// </summary>
+internal class DeleteParser
 {
     /// <summary>
-    /// Parses a DELETE command.
+    ///     Gets the Action that needs to be executed.
     /// </summary>
-    internal class DeleteParser
+    static internal Action Parse(string line, LSGlobals ls)
     {
-        /// <summary>
-        /// Gets the Action that needs to be executed.
-        /// </summary>
-        static internal Action Parse(string line, LSGlobals ls)
+        var data = ls.BotData;
+        var input = line.Trim();
+        var field = LineParser.ParseToken(ref input, TokenType.Parameter, true).ToUpper();
+
+        return () =>
         {
-            var data = ls.BotData;
-            var input = line.Trim();
-            var field = LineParser.ParseToken(ref input, TokenType.Parameter, true).ToUpper();
+            var name = "";
+            var comparer = Comparer.EqualTo;
 
-            return new Action(() =>
+            switch (field)
             {
-                var name = "";
-                var comparer = Comparer.EqualTo;
+                case "COOKIE":
+                    if (LineParser.Lookahead(ref input) == TokenType.Parameter)
+                        comparer = (Comparer)LineParser.ParseEnum(ref input, "TYPE", typeof(Comparer));
 
-                switch (field)
-                {
-                    case "COOKIE":
-                        if(LineParser.Lookahead(ref input) == TokenType.Parameter)
-                        {
-                            comparer = (Comparer)LineParser.ParseEnum(ref input, "TYPE", typeof(Comparer));
-                        }
-                        
-                        name = LineParser.ParseLiteral(ref input, "NAME");
+                    name = LineParser.ParseLiteral(ref input, "NAME");
 
-                        for (var i = 0; i < data.COOKIES.Count; i++)
-                        {
-                            var curr = data.COOKIES.ToList()[i].Key;
+                    for (var i = 0; i < data.COOKIES.Count; i++)
+                    {
+                        var curr = data.COOKIES.ToList()[i].Key;
 
-                            if (Condition.ReplaceAndVerify(curr, comparer, name, ls))
-                            {
-                                data.COOKIES.Remove(curr);
-                            }
-                        }
-                        break;
+                        if (Condition.ReplaceAndVerify(curr, comparer, name, ls)) data.COOKIES.Remove(curr);
+                    }
 
-                    case "VAR":
-                        if (LineParser.Lookahead(ref input) == TokenType.Parameter)
-                        {
-                            comparer = (Comparer)LineParser.ParseEnum(ref input, "TYPE", typeof(Comparer));
-                        }
+                    break;
 
-                        name = LineParser.ParseLiteral(ref input, "NAME");
-                        BlockBase.GetVariables(data).RemoveAll(comparer, name, ls);
-                        break;
+                case "VAR":
+                    if (LineParser.Lookahead(ref input) == TokenType.Parameter)
+                        comparer = (Comparer)LineParser.ParseEnum(ref input, "TYPE", typeof(Comparer));
 
-                    case "GVAR":
-                        if (LineParser.Lookahead(ref input) == TokenType.Parameter)
-                        {
-                            comparer = (Comparer)LineParser.ParseEnum(ref input, "TYPE", typeof(Comparer));
-                        }
+                    name = LineParser.ParseLiteral(ref input, "NAME");
+                    BlockBase.GetVariables(data).RemoveAll(comparer, name, ls);
+                    break;
 
-                        name = LineParser.ParseLiteral(ref input, "NAME");
-                        
-                        try
-                        {
-                            ls.Globals.RemoveAll(comparer, name, ls);
-                        }
-                        catch
-                        {
+                case "GVAR":
+                    if (LineParser.Lookahead(ref input) == TokenType.Parameter)
+                        comparer = (Comparer)LineParser.ParseEnum(ref input, "TYPE", typeof(Comparer));
 
-                        }
-                        break;
+                    name = LineParser.ParseLiteral(ref input, "NAME");
 
-                    default:
-                        throw new ArgumentException($"Invalid identifier {field}");
-                }
+                    try
+                    {
+                        ls.Globals.RemoveAll(comparer, name, ls);
+                    }
+                    catch
+                    {
+                    }
 
-                data.Logger.Log($"DELETE command executed on field {field}", LogColors.White);
-            });
-        }
+                    break;
+
+                default:
+                    throw new ArgumentException($"Invalid identifier {field}");
+            }
+
+            data.Logger.Log($"DELETE command executed on field {field}", LogColors.White);
+        };
     }
 }

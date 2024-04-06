@@ -22,113 +22,111 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpenBullet2.Shared.Forms
+namespace OpenBullet2.Shared.Forms;
+
+public partial class WordlistSelector
 {
-    public partial class WordlistSelector
+    private CGrid<WordlistEntity> grid;
+
+    private GridComponent<WordlistEntity> gridComponent;
+    private Task gridLoad;
+    private string linesPreview = string.Empty;
+    private WordlistEntity selectedWordlist;
+    private int uid = -1;
+
+    private List<WordlistEntity> wordlists = new();
+    [Inject] private AuthenticationStateProvider Auth { get; set; }
+    [Inject] private IWordlistRepository WordlistRepo { get; set; }
+    [Inject] private IModalService ModalService { get; set; }
+    [Inject] private VolatileSettingsService VolatileSettings { get; set; }
+
+    [CascadingParameter] private BlazoredModalInstance BlazoredModal { get; set; }
+
+    protected async override Task OnParametersSetAsync()
     {
-        [Inject] private AuthenticationStateProvider Auth { get; set; }
-        [Inject] private IWordlistRepository WordlistRepo { get; set; }
-        [Inject] private IModalService ModalService { get; set; }
-        [Inject] private VolatileSettingsService VolatileSettings { get; set; }
+        uid = await ((OBAuthenticationStateProvider)Auth).GetCurrentUserId();
 
-        [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+        wordlists = uid == 0
+            ? await WordlistRepo.GetAll().ToListAsync()
+            : await WordlistRepo.GetAll().Include(w => w.Owner).Where(w => w.Owner.Id == uid).ToListAsync();
 
-        private List<WordlistEntity> wordlists = new();
-        private WordlistEntity selectedWordlist;
-        private string linesPreview = string.Empty;
-        private int uid = -1;
-
-        private GridComponent<WordlistEntity> gridComponent;
-        private CGrid<WordlistEntity> grid;
-        private Task gridLoad;
-
-        protected override async Task OnParametersSetAsync()
+        Action<IGridColumnCollection<WordlistEntity>> columns = c =>
         {
-            uid = await ((OBAuthenticationStateProvider)Auth).GetCurrentUserId();
+            c.Add(w => w.Name).Titled(Loc["Name"]);
+            c.Add(w => w.Type).Titled(Loc["Type"]);
+            c.Add(w => w.Purpose).Titled(Loc["Purpose"]);
+            c.Add(w => w.Total).Titled(Loc["Lines"]);
+            c.Add(w => w.FileName).Titled(Loc["FileName"]);
+        };
 
-            wordlists = uid == 0
-                ? await WordlistRepo.GetAll().ToListAsync()
-                : await WordlistRepo.GetAll().Include(w => w.Owner).Where(w => w.Owner.Id == uid).ToListAsync();
+        var query = new QueryDictionary<StringValues>();
+        query.Add("grid-page", "1");
 
-            Action<IGridColumnCollection<WordlistEntity>> columns = c =>
-            {
-                c.Add(w => w.Name).Titled(Loc["Name"]);
-                c.Add(w => w.Type).Titled(Loc["Type"]);
-                c.Add(w => w.Purpose).Titled(Loc["Purpose"]);
-                c.Add(w => w.Total).Titled(Loc["Lines"]);
-                c.Add(w => w.FileName).Titled(Loc["FileName"]);
-            };
+        var client = new GridClient<WordlistEntity>(q => GetGridRows(columns, q), query, false, "wordlistsGrid",
+                columns, CultureInfo.CurrentCulture)
+            .Sortable()
+            .Filterable()
+            .ChangePageSize(true)
+            .WithMultipleFilters()
+            .SetKeyboard(true)
+            .Selectable(true, false, false);
+        grid = client.Grid;
 
-            var query = new QueryDictionary<StringValues>();
-            query.Add("grid-page", "1");
+        // Try to set a previous filter
+        if (VolatileSettings.GridQueries.ContainsKey((uid, "wordlistsGrid")))
+            grid.Query = VolatileSettings.GridQueries[(uid, "wordlistsGrid")];
 
-            var client = new GridClient<WordlistEntity>(q => GetGridRows(columns, q), query, false, "wordlistsGrid", columns, CultureInfo.CurrentCulture)
-                .Sortable()
-                .Filterable()
-                .ChangePageSize(true)
-                .WithMultipleFilters()
-                .SetKeyboard(true)
-                .Selectable(true, false, false);
-            grid = client.Grid;
+        // Set new items to grid
+        gridLoad = client.UpdateGrid();
+        await gridLoad;
+    }
 
-            // Try to set a previous filter
-            if (VolatileSettings.GridQueries.ContainsKey((uid, "wordlistsGrid")))
-            {
-                grid.Query = VolatileSettings.GridQueries[(uid, "wordlistsGrid")];
-            }
+    private ItemsDTO<WordlistEntity> GetGridRows(Action<IGridColumnCollection<WordlistEntity>> columns,
+        QueryDictionary<StringValues> query)
+    {
+        VolatileSettings.GridQueries[(uid, "wordlistsGrid")] = query;
 
-            // Set new items to grid
-            gridLoad = client.UpdateGrid();
-            await gridLoad;
+        var server = new GridServer<WordlistEntity>(wordlists, new QueryCollection(query),
+            true, "wordlistsGrid", columns, 15).Sortable().Filterable().WithMultipleFilters();
+
+        // Return items to displays
+        return server.ItemsToDisplay;
+    }
+
+    protected void OnWordlistSelected(object item)
+    {
+        if (item.GetType() == typeof(WordlistEntity))
+        {
+            selectedWordlist = (WordlistEntity)item;
+            PreviewSelected();
+        }
+    }
+
+    private void PreviewSelected()
+    {
+        var previewAmount = Math.Min(selectedWordlist.Total, 10);
+
+        try
+        {
+            var lines = File.ReadLines(selectedWordlist.FileName).Take(previewAmount);
+            linesPreview = string.Join(Environment.NewLine, lines);
+        }
+        catch
+        {
+            linesPreview = string.Empty;
         }
 
-        private ItemsDTO<WordlistEntity> GetGridRows(Action<IGridColumnCollection<WordlistEntity>> columns,
-                QueryDictionary<StringValues> query)
+        StateHasChanged();
+    }
+
+    private async Task Select()
+    {
+        if (selectedWordlist == null)
         {
-            VolatileSettings.GridQueries[(uid, "wordlistsGrid")] = query;
-
-            var server = new GridServer<WordlistEntity>(wordlists, new QueryCollection(query),
-                true, "wordlistsGrid", columns, 15).Sortable().Filterable().WithMultipleFilters();
-
-            // Return items to displays
-            return server.ItemsToDisplay;
+            await js.AlertError(Loc["Uh-Oh"], Loc["SelectWordlistFirst"]);
+            return;
         }
 
-        protected void OnWordlistSelected(object item)
-        {
-            if (item.GetType() == typeof(WordlistEntity))
-            {
-                selectedWordlist = (WordlistEntity)item;
-                PreviewSelected();
-            }
-        }
-
-        private void PreviewSelected()
-        {
-            var previewAmount = Math.Min(selectedWordlist.Total, 10);
-
-            try
-            {
-                var lines = File.ReadLines(selectedWordlist.FileName).Take(previewAmount);
-                linesPreview = string.Join(Environment.NewLine, lines);
-            }
-            catch
-            {
-                linesPreview = string.Empty;
-            }
-
-            StateHasChanged();
-        }
-
-        private async Task Select()
-        {
-            if (selectedWordlist == null)
-            {
-                await js.AlertError(Loc["Uh-Oh"], Loc["SelectWordlistFirst"]);
-                return;
-            }
-
-            BlazoredModal.Close(ModalResult.Ok(selectedWordlist));
-        }
+        BlazoredModal.Close(ModalResult.Ok(selectedWordlist));
     }
 }

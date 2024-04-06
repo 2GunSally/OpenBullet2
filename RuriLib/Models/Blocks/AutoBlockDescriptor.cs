@@ -1,7 +1,6 @@
-﻿namespace RuriLib.Models.Blocks
+﻿namespace RuriLib.Models.Blocks;
+
+public class AutoBlockDescriptor : BlockDescriptor
 {
-    public class AutoBlockDescriptor : BlockDescriptor
-    {
-        public bool Async { get; set; }
-    }
+    public bool Async { get; set; }
 }

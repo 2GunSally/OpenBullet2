@@ -1,12 +1,11 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace RuriLib.Models.Data.Rules
-{
-    public class RegexDataRule : DataRule
-    {
-        public string RegexToMatch { get; set; } = "^.*$";
+namespace RuriLib.Models.Data.Rules;
 
-        public override bool IsSatisfied(string value)
-            => Invert ^ Regex.IsMatch(value, RegexToMatch);
-    }
+public class RegexDataRule : DataRule
+{
+    public string RegexToMatch { get; set; } = "^.*$";
+
+    public override bool IsSatisfied(string value)
+        => Invert ^ Regex.IsMatch(value, RegexToMatch);
 }

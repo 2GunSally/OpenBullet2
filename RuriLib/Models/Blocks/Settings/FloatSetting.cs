@@ -1,7 +1,6 @@
-﻿namespace RuriLib.Models.Blocks.Settings
+﻿namespace RuriLib.Models.Blocks.Settings;
+
+public class FloatSetting : Setting
 {
-    public class FloatSetting : Setting
-    {
-        public float Value { get; set; }
-    }
+    public float Value { get; set; }
 }

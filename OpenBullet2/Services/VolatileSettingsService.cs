@@ -7,34 +7,27 @@ using RuriLib.Services;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OpenBullet2.Services
+namespace OpenBullet2.Services;
+
+public class VolatileSettingsService
 {
-    public class VolatileSettingsService
+    public VolatileSettingsService(RuriLibSettingsService ruriLibSettings)
     {
-        public DebuggerOptions DebuggerOptions { get; set; }
-        public BotLogger DebuggerLog { get; set; }
-        public List<BlockDescriptor> RecentDescriptors { get; set; }
-        public bool ConfigsDetailedView { get; set; } = false;
-        public Dictionary<(int, string), QueryDictionary<StringValues>> GridQueries { get; set; } = new();
+        DebuggerOptions = new DebuggerOptions { WordlistType = ruriLibSettings.Environment.WordlistTypes.First().Name };
+        DebuggerLog = new BotLogger();
+        RecentDescriptors = new List<BlockDescriptor>();
+    }
 
-        public VolatileSettingsService(RuriLibSettingsService ruriLibSettings)
-        {
-            DebuggerOptions = new DebuggerOptions
-            {
-                WordlistType = ruriLibSettings.Environment.WordlistTypes.First().Name 
-            };
-            DebuggerLog = new();
-            RecentDescriptors = new();
-        }
+    public DebuggerOptions DebuggerOptions { get; set; }
+    public BotLogger DebuggerLog { get; set; }
+    public List<BlockDescriptor> RecentDescriptors { get; set; }
+    public bool ConfigsDetailedView { get; set; } = false;
+    public Dictionary<(int, string), QueryDictionary<StringValues>> GridQueries { get; set; } = new();
 
-        public void AddRecentDescriptor(BlockDescriptor descriptor)
-        {
-            if (RecentDescriptors.Contains(descriptor))
-            {
-                RecentDescriptors.Remove(descriptor);
-            }
+    public void AddRecentDescriptor(BlockDescriptor descriptor)
+    {
+        if (RecentDescriptors.Contains(descriptor)) RecentDescriptors.Remove(descriptor);
 
-            RecentDescriptors.Insert(0, descriptor);
-        }
+        RecentDescriptors.Insert(0, descriptor);
     }
 }

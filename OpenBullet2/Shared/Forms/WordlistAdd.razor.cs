@@ -16,165 +16,160 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Tewr.Blazor.FileReader;
 
-namespace OpenBullet2.Shared.Forms
+namespace OpenBullet2.Shared.Forms;
+
+public partial class WordlistAdd : IDisposable
 {
-    public partial class WordlistAdd : IDisposable
+    private string baseDirectory = ".";
+
+    private ElementReference inputTypeFileElement;
+    private long max;
+    private MemoryStream memoryStream;
+    private List<Node> nodes = new();
+    private decimal progress;
+
+    private Node selectedNode;
+    private int uid = -1;
+    private bool validUpload;
+    private long value;
+    private WordlistEntity wordlist;
+    private List<string> wordlistTypes;
+    [CascadingParameter] public BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Inject] private IFileReaderService FileReaderService { get; set; }
+    [Inject] private RuriLibSettingsService RuriLibSettings { get; set; }
+    [Inject] private OpenBulletSettingsService OBSettingsService { get; set; }
+    [Inject] private AuthenticationStateProvider Auth { get; set; }
+
+    public void Dispose()
+        => memoryStream?.Close();
+
+    protected async override Task OnInitializedAsync()
     {
-        [CascadingParameter] public BlazoredModalInstance BlazoredModal { get; set; }
+        wordlistTypes = RuriLibSettings.Environment.WordlistTypes.Select(w => w.Name).ToList();
 
-        [Inject] private IFileReaderService FileReaderService { get; set; }
-        [Inject] private RuriLibSettingsService RuriLibSettings { get; set; }
-        [Inject] private OpenBulletSettingsService OBSettingsService { get; set; }
-        [Inject] private AuthenticationStateProvider Auth { get; set; }
+        wordlist = new WordlistEntity { Name = "My Wordlist", Type = wordlistTypes.First() };
 
-        private ElementReference inputTypeFileElement;
-        private List<string> wordlistTypes;
-        private WordlistEntity wordlist;
-        private MemoryStream memoryStream;
-        private int uid = -1;
-        private long max;
-        private long value;
-        private decimal progress;
-        private string baseDirectory = ".";
-        private bool validUpload = false;
+        uid = await ((OBAuthenticationStateProvider)Auth).GetCurrentUserId();
 
-        private Node selectedNode = null;
-        private List<Node> nodes = new() { };
-
-        protected override async Task OnInitializedAsync()
+        if (uid == 0)
         {
-            wordlistTypes = RuriLibSettings.Environment.WordlistTypes.Select(w => w.Name).ToList();
-
-            wordlist = new WordlistEntity
-            {
-                Name = "My Wordlist",
-                Type = wordlistTypes.First()
-            };
-
-            uid = await ((OBAuthenticationStateProvider)Auth).GetCurrentUserId();
-
-            if (uid == 0)
-            {
-                baseDirectory = Directory.Exists("UserData") ? "UserData" : Directory.GetCurrentDirectory();
-                await LoadTree(baseDirectory);
-            }
+            baseDirectory = Directory.Exists("UserData") ? "UserData" : Directory.GetCurrentDirectory();
+            await LoadTree(baseDirectory);
         }
-
-        private async Task ProcessUploadedWordlist()
-        {
-            max = 0;
-            value = 0;
-            StateHasChanged();
-            var files = (await FileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync()).ToList();
-            var file = files.FirstOrDefault();
-
-            if (file == null)
-                return;
-
-            var fileInfo = await file.ReadFileInfoAsync();
-            wordlist.Name = Path.GetFileNameWithoutExtension(fileInfo.Name);
-            max = fileInfo.Size;
-            StateHasChanged();
-
-            using (var fs = await file.OpenReadAsync())
-            {
-                var buffer = new byte[20480];
-                memoryStream = new MemoryStream();
-                int count;
-                while ((count = await fs.ReadAsync(buffer, 0, buffer.Length)) != 0)
-                {
-                    value += count;
-                    progress = ((decimal)fs.Position * 100) / fs.Length;
-                    await InvokeAsync(StateHasChanged);
-                    await Task.Delay(1);
-                    await memoryStream.WriteAsync(buffer, 0, count);
-                }
-            }
-            StateHasChanged();
-            validUpload = true;
-        }
-
-        private async Task LoadTree(string baseDirectory)
-        {
-            if (!Directory.Exists(baseDirectory))
-            {
-                await js.AlertError(Loc["Uh-Oh"], Loc["DirectoryNonExistant"]);
-                return;
-            }
-
-            // If for example C: and not C:/ add the /
-            if (Regex.Match(baseDirectory, "^[A-Za-z]:$").Success)
-            {
-                baseDirectory += '/';
-            }
-
-            if (!OBSettingsService.Settings.SecuritySettings.AllowSystemWideFileAccess &&
-                !baseDirectory.IsSubPathOf(Directory.GetCurrentDirectory()))
-            {
-                await js.AlertError(Loc["Unauthorized"], Loc["SystemWideFileAccessDisabled"]);
-                return;
-            }
-
-            var folders = Directory.GetDirectories(baseDirectory);
-            var files = Directory.GetFiles(baseDirectory);
-            nodes = folders.Concat(files).Select(e => new Node(e)).ToList();
-            var paths = nodes.Select(n => n.Path).ToArray();
-            StateHasChanged();
-        }
-
-        private async Task Upload()
-        {
-            if (!validUpload)
-            {
-                await js.AlertError(Loc["Uh-Oh"], Loc["UploadFileFirst"]);
-                return;
-            }
-
-            memoryStream.Seek(0, SeekOrigin.Begin);
-            var fileName = Path.Combine("UserData", "Wordlists", Guid.NewGuid().ToString() + ".txt").Replace('\\', '/');
-            FileStream fs = new(fileName, FileMode.Create);
-            memoryStream.CopyTo(fs);
-            fs.Close();
-            wordlist.FileName = fileName;
-            wordlist.Total = File.ReadLines(fileName).Count();
-
-            BlazoredModal.Close(ModalResult.Ok(wordlist));
-        }
-
-        private async Task SelectFile()
-        {
-            if (selectedNode == null || selectedNode.IsDirectory)
-            {
-                await js.AlertError(Loc["Uh-Oh"], Loc["SelectFileFirst"]);
-                return;
-            }
-
-            wordlist.FileName = selectedNode.Path.Replace("\\", "/");
-            wordlist.Total = File.ReadLines(selectedNode.Path).Count();
-            BlazoredModal.Close(ModalResult.Ok(wordlist));
-        }
-
-        public void Dispose()
-            => memoryStream?.Close();
-
-        ~WordlistAdd()
-            => Dispose();
     }
 
-    public class Node
+    private async Task ProcessUploadedWordlist()
     {
-        public string Path { get; }
-        public bool IsDirectory => (File.GetAttributes(Path) & FileAttributes.Directory) == FileAttributes.Directory;
-        public string Name => System.IO.Path.GetFileName(Path);
+        max = 0;
+        value = 0;
+        StateHasChanged();
+        var files = (await FileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync()).ToList();
+        var file = files.FirstOrDefault();
 
-        public IEnumerable<Node> Children
-            => children ?? Directory.GetFileSystemEntries(Path).Select(e => new Node(e)).ToArray();
+        if (file == null)
+            return;
 
-        private readonly Node[] children = null;
+        var fileInfo = await file.ReadFileInfoAsync();
+        wordlist.Name = Path.GetFileNameWithoutExtension(fileInfo.Name);
+        max = fileInfo.Size;
+        StateHasChanged();
 
-        public Node(string path)
+        using (var fs = await file.OpenReadAsync())
         {
-            Path = path;
+            var buffer = new byte[20480];
+            memoryStream = new MemoryStream();
+            int count;
+            while ((count = await fs.ReadAsync(buffer, 0, buffer.Length)) != 0)
+            {
+                value += count;
+                progress = (decimal)fs.Position * 100 / fs.Length;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(1);
+                await memoryStream.WriteAsync(buffer, 0, count);
+            }
         }
+
+        StateHasChanged();
+        validUpload = true;
     }
+
+    private async Task LoadTree(string baseDirectory)
+    {
+        if (!Directory.Exists(baseDirectory))
+        {
+            await js.AlertError(Loc["Uh-Oh"], Loc["DirectoryNonExistant"]);
+            return;
+        }
+
+        // If for example C: and not C:/ add the /
+        if (Regex.Match(baseDirectory, "^[A-Za-z]:$").Success) baseDirectory += '/';
+
+        if (!OBSettingsService.Settings.SecuritySettings.AllowSystemWideFileAccess &&
+            !baseDirectory.IsSubPathOf(Directory.GetCurrentDirectory()))
+        {
+            await js.AlertError(Loc["Unauthorized"], Loc["SystemWideFileAccessDisabled"]);
+            return;
+        }
+
+        var folders = Directory.GetDirectories(baseDirectory);
+        var files = Directory.GetFiles(baseDirectory);
+        nodes = folders.Concat(files).Select(e => new Node(e)).ToList();
+        var paths = nodes.Select(n => n.Path).ToArray();
+        StateHasChanged();
+    }
+
+    private async Task Upload()
+    {
+        if (!validUpload)
+        {
+            await js.AlertError(Loc["Uh-Oh"], Loc["UploadFileFirst"]);
+            return;
+        }
+
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        var fileName = Path.Combine("UserData", "Wordlists", Guid.NewGuid() + ".txt").Replace('\\', '/');
+        FileStream fs = new(fileName, FileMode.Create);
+        memoryStream.CopyTo(fs);
+        fs.Close();
+        wordlist.FileName = fileName;
+        wordlist.Total = File.ReadLines(fileName).Count();
+
+        BlazoredModal.Close(ModalResult.Ok(wordlist));
+    }
+
+    private async Task SelectFile()
+    {
+        if (selectedNode == null || selectedNode.IsDirectory)
+        {
+            await js.AlertError(Loc["Uh-Oh"], Loc["SelectFileFirst"]);
+            return;
+        }
+
+        wordlist.FileName = selectedNode.Path.Replace("\\", "/");
+        wordlist.Total = File.ReadLines(selectedNode.Path).Count();
+        BlazoredModal.Close(ModalResult.Ok(wordlist));
+    }
+
+    ~WordlistAdd()
+    {
+        Dispose();
+    }
+}
+
+public class Node
+{
+    private readonly Node[] children = null;
+
+    public Node(string path)
+    {
+        Path = path;
+    }
+
+    public string Path { get; }
+    public bool IsDirectory => (File.GetAttributes(Path) & FileAttributes.Directory) == FileAttributes.Directory;
+    public string Name => System.IO.Path.GetFileName(Path);
+
+    public IEnumerable<Node> Children
+        => children ?? Directory.GetFileSystemEntries(Path).Select(e => new Node(e)).ToArray();
 }

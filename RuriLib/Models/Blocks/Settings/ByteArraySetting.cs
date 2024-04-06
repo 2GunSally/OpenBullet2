@@ -1,7 +1,6 @@
-﻿namespace RuriLib.Models.Blocks.Settings
+﻿namespace RuriLib.Models.Blocks.Settings;
+
+public class ByteArraySetting : Setting
 {
-    public class ByteArraySetting : Setting
-    {
-        public byte[] Value { get; set; }
-    }
+    public byte[] Value { get; set; }
 }

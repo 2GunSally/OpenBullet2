@@ -1,38 +1,35 @@
 ﻿using RuriLib.Extensions;
 using RuriLib.Models.Blocks.Settings;
 
-namespace RuriLib.Models.Blocks.Parameters
+namespace RuriLib.Models.Blocks.Parameters;
+
+public class BoolParameter : BlockParameter
 {
-    public class BoolParameter : BlockParameter
+    public BoolParameter()
     {
-        public bool DefaultValue { get; set; }
-
-        public BoolParameter()
-        {
-
-        }
-
-        public BoolParameter(string name, bool defaultValue = false)
-        {
-            Name = name;
-            DefaultValue = defaultValue;
-        }
-
-        public BoolParameter(string name, string defaultVariableName = "")
-        {
-            Name = name;
-            DefaultVariableName = defaultVariableName;
-            InputMode = SettingInputMode.Variable;
-        }
-
-        public override BlockSetting ToBlockSetting()
-            => new()
-            {
-                Name = Name,
-                Description = Description,
-                ReadableName = PrettyName ?? Name.ToReadableName(),
-                FixedSetting = new BoolSetting { Value = DefaultValue },
-                InputMode = InputMode
-            };
     }
+
+    public BoolParameter(string name, bool defaultValue = false)
+    {
+        Name = name;
+        DefaultValue = defaultValue;
+    }
+
+    public BoolParameter(string name, string defaultVariableName = "")
+    {
+        Name = name;
+        DefaultVariableName = defaultVariableName;
+        InputMode = SettingInputMode.Variable;
+    }
+
+    public bool DefaultValue { get; set; }
+
+    public override BlockSetting ToBlockSetting()
+        => new() {
+            Name = Name,
+            Description = Description,
+            ReadableName = PrettyName ?? Name.ToReadableName(),
+            FixedSetting = new BoolSetting { Value = DefaultValue },
+            InputMode = InputMode
+        };
 }

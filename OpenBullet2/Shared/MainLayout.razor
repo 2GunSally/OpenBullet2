@@ -5,27 +5,28 @@
 
 @if (themePath != null)
 {
-    <Link rel="stylesheet" href="@themePath" />
+  <Link rel="stylesheet" href="@themePath"/>
 }
 
-<BlazoredModal />
+<BlazoredModal/>
 
 <div class="sidebar">
-    <NavMenu />
+  <NavMenu/>
 </div>
 
 <div class="main">
-    <div class="content px-4">
-        @Body
-    </div>
+  <div class="content px-4">
+    @Body
+  </div>
 </div>
 
 @code {
-    private string themePath;
+  private string themePath;
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (OBSettingsService.Settings.CustomizationSettings.Theme != "Default")
-            themePath = (await ThemeRepo.GetPath(OBSettingsService.Settings.CustomizationSettings.Theme)).Replace("wwwroot/", "");
-    }
-} 
+  protected override async Task OnInitializedAsync()
+  {
+    if (OBSettingsService.Settings.CustomizationSettings.Theme != "Default")
+      themePath = (await ThemeRepo.GetPath(OBSettingsService.Settings.CustomizationSettings.Theme)).Replace("wwwroot/", "");
+  }
+
+}

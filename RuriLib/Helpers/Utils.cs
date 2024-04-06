@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace RuriLib.Helpers
+namespace RuriLib.Helpers;
+
+public static class Utils
 {
-    public static class Utils
-    {
-        public static bool IsDocker() => Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
-    }
+    public static bool IsDocker() => Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 }

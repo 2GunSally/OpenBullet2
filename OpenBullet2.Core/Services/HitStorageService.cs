@@ -6,86 +6,84 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OpenBullet2.Core.Services
+namespace OpenBullet2.Core.Services;
+
+/// <summary>
+///     Stores hits to an <see cref="IHitRepository" /> in a thread-safe manner.
+/// </summary>
+public class HitStorageService : IDisposable
 {
-    /// <summary>
-    /// Stores hits to an <see cref="IHitRepository"/> in a thread-safe manner.
-    /// </summary>
-    public class HitStorageService : IDisposable
+    private readonly IHitRepository hitRepo;
+    private readonly SemaphoreSlim semaphore;
+
+    public HitStorageService(IHitRepository hitRepo)
     {
-        private readonly IHitRepository hitRepo;
-        private readonly SemaphoreSlim semaphore;
+        this.hitRepo = hitRepo;
+        semaphore = new SemaphoreSlim(1, 1);
+    }
 
-        public HitStorageService(IHitRepository hitRepo)
+    public void Dispose()
+    {
+        semaphore?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    ///     Stores a hit in a thread-safe manner.
+    /// </summary>
+    public async Task Store(Hit hit)
+    {
+        var entity = new HitEntity {
+            CapturedData = hit.CapturedDataString,
+            Data = hit.DataString,
+            Date = hit.Date,
+            Proxy = hit.ProxyString,
+            Type = hit.Type,
+            ConfigId = hit.Config.Id,
+            ConfigName = hit.Config.Metadata.Name,
+            ConfigCategory = hit.Config.Metadata.Category,
+            OwnerId = hit.OwnerId
+        };
+
+        switch (hit.DataPool)
         {
-            this.hitRepo = hitRepo;
-            semaphore = new SemaphoreSlim(1, 1);
+            case WordlistDataPool wordlistDataPool:
+                entity.WordlistId = wordlistDataPool.Wordlist.Id;
+                entity.WordlistName = wordlistDataPool.Wordlist.Name;
+                break;
+
+            // The following are not actual wordlists but it can help identify which pool was used
+            case FileDataPool fileDataPool:
+                entity.WordlistId = fileDataPool.POOL_CODE;
+                entity.WordlistName = fileDataPool.FileName;
+                break;
+
+            case RangeDataPool rangeDataPool:
+                entity.WordlistId = rangeDataPool.POOL_CODE;
+                entity.WordlistName = $"{rangeDataPool.Start}|{rangeDataPool.Amount}|{rangeDataPool.Pad}";
+                break;
+
+            case CombinationsDataPool combationsDataPool:
+                entity.WordlistId = combationsDataPool.POOL_CODE;
+                entity.WordlistName = $"{combationsDataPool.Length}|{combationsDataPool.CharSet}";
+                break;
+
+            case InfiniteDataPool infiniteDataPool:
+                entity.WordlistId = infiniteDataPool.POOL_CODE;
+                break;
         }
 
-        /// <summary>
-        /// Stores a hit in a thread-safe manner.
-        /// </summary>
-        public async Task Store(Hit hit)
+        // Only allow saving one hit at a time (multiple threads should
+        // not use the same DbContext at the same time).
+        await semaphore.WaitAsync();
+
+        try
         {
-            var entity = new HitEntity
-            {
-                CapturedData = hit.CapturedDataString,
-                Data = hit.DataString,
-                Date = hit.Date,
-                Proxy = hit.ProxyString,
-                Type = hit.Type,
-                ConfigId = hit.Config.Id,
-                ConfigName = hit.Config.Metadata.Name,
-                ConfigCategory = hit.Config.Metadata.Category,
-                OwnerId = hit.OwnerId
-            };
-
-            switch (hit.DataPool)
-            {
-                case WordlistDataPool wordlistDataPool:
-                    entity.WordlistId = wordlistDataPool.Wordlist.Id;
-                    entity.WordlistName = wordlistDataPool.Wordlist.Name;
-                    break;
-
-                // The following are not actual wordlists but it can help identify which pool was used
-                case FileDataPool fileDataPool:
-                    entity.WordlistId = fileDataPool.POOL_CODE;
-                    entity.WordlistName = fileDataPool.FileName;
-                    break;
-
-                case RangeDataPool rangeDataPool:
-                    entity.WordlistId = rangeDataPool.POOL_CODE;
-                    entity.WordlistName = $"{rangeDataPool.Start}|{rangeDataPool.Amount}|{rangeDataPool.Pad}";
-                    break;
-
-                case CombinationsDataPool combationsDataPool:
-                    entity.WordlistId = combationsDataPool.POOL_CODE;
-                    entity.WordlistName = $"{combationsDataPool.Length}|{combationsDataPool.CharSet}";
-                    break;
-
-                case InfiniteDataPool infiniteDataPool:
-                    entity.WordlistId = infiniteDataPool.POOL_CODE;
-                    break;
-            }
-
-            // Only allow saving one hit at a time (multiple threads should
-            // not use the same DbContext at the same time).
-            await semaphore.WaitAsync();
-
-            try
-            {
-                await hitRepo.Add(entity);
-            }
-            finally
-            {
-                semaphore.Release();
-            }
+            await hitRepo.Add(entity);
         }
-
-        public void Dispose()
+        finally
         {
-            semaphore?.Dispose();
-            GC.SuppressFinalize(this);
+            semaphore.Release();
         }
     }
 }

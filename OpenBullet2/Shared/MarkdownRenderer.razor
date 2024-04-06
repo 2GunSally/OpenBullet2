@@ -2,24 +2,25 @@
 @using Ganss.Xss
 @if (HtmlContent != null)
 {
-    @((MarkupString)HtmlContent)
+  @((MarkupString)HtmlContent)
 }
 
 @code {
-    [Parameter] public string MarkdownContent { get; set; }
+  [Parameter] public string MarkdownContent { get; set; }
 
-    private string HtmlContent;
+  private string HtmlContent;
 
-    protected override void OnParametersSet()
+  protected override void OnParametersSet()
+  {
+    if (!string.IsNullOrEmpty(MarkdownContent))
     {
-        if (!string.IsNullOrEmpty(MarkdownContent))
-        {
-            string dangerous = Markdown.ToHtml(MarkdownContent);
-            HtmlContent = new HtmlSanitizer().Sanitize(dangerous);
-        }
-        else
-        {
-            HtmlContent = null;
-        }
+      var dangerous = Markdown.ToHtml(MarkdownContent);
+      HtmlContent = new HtmlSanitizer().Sanitize(dangerous);
     }
+    else
+    {
+      HtmlContent = null;
+    }
+  }
+
 }

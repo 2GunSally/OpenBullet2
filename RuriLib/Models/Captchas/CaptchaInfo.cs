@@ -1,10 +1,9 @@
 ﻿using CaptchaSharp.Enums;
 
-namespace RuriLib.Models.Captchas
+namespace RuriLib.Models.Captchas;
+
+public class CaptchaInfo
 {
-    public class CaptchaInfo
-    {
-        public string Id { get; set; }
-        public CaptchaType Type { get; set; }
-    }
+    public string Id { get; set; }
+    public CaptchaType Type { get; set; }
 }

@@ -9,67 +9,65 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace OpenBullet2.Pages
+namespace OpenBullet2.Pages;
+
+public partial class Setup
 {
-    public partial class Setup
+    private readonly AdminAccount admin = new();
+
+    private readonly int finalStep = 5;
+    private int step;
+    [Inject] private NavigationManager Nav { get; set; }
+    [Inject] private OpenBulletSettingsService OBSettingsService { get; set; }
+    [Inject] private AuthenticationStateProvider Auth { get; set; }
+    [Inject] private IModalService Modal { get; set; }
+
+    /*
+    protected async override Task OnAfterRenderAsync(bool firstRender)
     {
-        [Inject] private NavigationManager Nav { get; set; }
-        [Inject] private OpenBulletSettingsService OBSettingsService { get; set; }
-        [Inject] private AuthenticationStateProvider Auth { get; set; }
-        [Inject] private IModalService Modal { get; set; }
-        
-        private readonly int finalStep = 5;
-        private int step = 0;
-        private readonly AdminAccount admin = new();
-
-        /*
-        protected async override Task OnAfterRenderAsync(bool firstRender)
+        if (firstRender)
         {
-            if (firstRender)
-            {
-                await js.InvokeVoidAsync("startRandomSetupEffect");
-            }
+            await js.InvokeVoidAsync("startRandomSetupEffect");
         }
-        */
+    }
+    */
 
-        private void ChangeLanguage()
-        {
-            var parameters = new ModalParameters();
-            parameters.Add(nameof(CultureSelector.SaveSettings), false);
-            Modal.Show<CultureSelector>(Loc["ChooseYourLanguage"], parameters);
-        }
+    private void ChangeLanguage()
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(CultureSelector.SaveSettings), false);
+        Modal.Show<CultureSelector>(Loc["ChooseYourLanguage"], parameters);
+    }
 
-        private class AdminAccount
-        {
-            [Required]
-            [StringLength(32, ErrorMessage = "The username must be between 1 and 32 characters", MinimumLength = 1)]
-            public string Username { get; set; } = "admin";
+    private async Task SetupAdminAccount()
+    {
+        OBSettingsService.Settings.SecuritySettings.RequireAdminLogin = true;
+        OBSettingsService.Settings.SecuritySettings.AdminUsername = admin.Username;
+        OBSettingsService.Settings.SecuritySettings.SetupAdminPassword(admin.Password);
 
-            [Required]
-            [StringLength(32, ErrorMessage = "The password must be between 8 and 32 characters.", MinimumLength = 8)]
-            public string Password { get; set; } = string.Empty;
+        // Authenticate the admin (we don't care about its IP)
+        await ((OBAuthenticationStateProvider)Auth).AuthenticateUser(admin.Username, admin.Password,
+            IPAddress.Parse("127.0.0.1"));
 
-            [Required]
-            [Compare("Password")]
-            public string ConfirmPassword { get; set; } = string.Empty;
-        }
+        step++;
+    }
 
-        private async Task SetupAdminAccount()
-        {
-            OBSettingsService.Settings.SecuritySettings.RequireAdminLogin = true;
-            OBSettingsService.Settings.SecuritySettings.AdminUsername = admin.Username;
-            OBSettingsService.Settings.SecuritySettings.SetupAdminPassword(admin.Password);
+    private async Task CompleteSetup()
+    {
+        await OBSettingsService.Save();
+        Nav.NavigateTo("/");
+    }
 
-            // Authenticate the admin (we don't care about its IP)
-            await ((OBAuthenticationStateProvider)Auth).AuthenticateUser(admin.Username, admin.Password, IPAddress.Parse("127.0.0.1"));
+    private class AdminAccount
+    {
+        [Required]
+        [StringLength(32, ErrorMessage = "The username must be between 1 and 32 characters", MinimumLength = 1)]
+        public string Username { get; set; } = "admin";
 
-            step++;
-        }
+        [Required]
+        [StringLength(32, ErrorMessage = "The password must be between 8 and 32 characters.", MinimumLength = 8)]
+        public string Password { get; set; } = string.Empty;
 
-        private async Task CompleteSetup()
-        {
-            await OBSettingsService.Save();
-            Nav.NavigateTo("/");
-        }
+        [Required] [Compare("Password")] public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

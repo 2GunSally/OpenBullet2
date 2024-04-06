@@ -3,32 +3,28 @@ using RuriLib.Functions.Files;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace RuriLib.Models.Hits.HitOutputs
+namespace RuriLib.Models.Hits.HitOutputs;
+
+public class FileSystemHitOutput : IHitOutput
 {
-    public class FileSystemHitOutput : IHitOutput
+    public FileSystemHitOutput(string baseDir = "Hits")
     {
-        public string BaseDir { get; set; }
+        BaseDir = baseDir;
+    }
 
-        public FileSystemHitOutput(string baseDir = "Hits")
-        {
-            BaseDir = baseDir;
-        }
+    public string BaseDir { get; set; }
 
-        public Task Store(Hit hit)
-        {
-            Directory.CreateDirectory(BaseDir);
+    public Task Store(Hit hit)
+    {
+        Directory.CreateDirectory(BaseDir);
 
-            var folderName = Path.Combine(BaseDir, hit.Config.Metadata.Name.ToValidFileName());
-            Directory.CreateDirectory(folderName);
-            
-            var fileName = Path.Combine(folderName, $"{hit.Type.ToValidFileName()}.txt");
+        var folderName = Path.Combine(BaseDir, hit.Config.Metadata.Name.ToValidFileName());
+        Directory.CreateDirectory(folderName);
 
-            lock (FileLocker.GetHandle(fileName))
-            {
-                File.AppendAllTextAsync(fileName, $"{hit}\r\n");
-            }
+        var fileName = Path.Combine(folderName, $"{hit.Type.ToValidFileName()}.txt");
 
-            return Task.CompletedTask;
-        }
+        lock (FileLocker.GetHandle(fileName)) File.AppendAllTextAsync(fileName, $"{hit}\r\n");
+
+        return Task.CompletedTask;
     }
 }

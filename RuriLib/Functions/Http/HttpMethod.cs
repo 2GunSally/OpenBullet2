@@ -1,15 +1,14 @@
-﻿namespace RuriLib.Functions.Http
+﻿namespace RuriLib.Functions.Http;
+
+public enum HttpMethod
 {
-    public enum HttpMethod
-    {
-        GET,
-        POST,
-        HEAD,
-        PUT,
-        DELETE,
-        PATCH,
-        TRACE,
-        CONNECT,
-        OPTIONS
-    }
+    GET,
+    POST,
+    HEAD,
+    PUT,
+    DELETE,
+    PATCH,
+    TRACE,
+    CONNECT,
+    OPTIONS
 }

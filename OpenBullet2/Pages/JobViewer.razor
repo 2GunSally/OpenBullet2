@@ -9,34 +9,37 @@
 
 @if (job == null || !CanSeeJob(job.OwnerId))
 {
-    <p>@Loc["NoJob1"] @Id, @Loc["NoJob2"].</p>
+  <p>@Loc["NoJob1"] @Id, @Loc["NoJob2"].</p>
 }
 else
 {
-    switch (job)
-    {
-        case MultiRunJob x:
-            <MultiRunJobViewer Job="x" />
-            break;
+  switch (job)
+  {
+    case MultiRunJob x:
+      <MultiRunJobViewer Job="x"/>
+      break;
 
-        case ProxyCheckJob x:
-            <ProxyCheckJobViewer Job="x" />
-            break;
-    }
+    case ProxyCheckJob x:
+      <ProxyCheckJobViewer Job="x"/>
+      break;
+  }
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
-    
-    private Job job;
-    private int uid = -1;
+  [Parameter] public int Id { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        uid = await ((OBAuthenticationStateProvider)Auth).GetCurrentUserId();
-        job = Manager.Jobs.FirstOrDefault(j => j.Id == Id);
-    }
+  private Job job;
+  private int uid = -1;
 
-    private bool CanSeeJob(int ownerId)
-        => uid == 0 || ownerId == uid;
+  protected override async Task OnInitializedAsync()
+  {
+    uid = await ((OBAuthenticationStateProvider)Auth).GetCurrentUserId();
+    job = Manager.Jobs.FirstOrDefault(j => j.Id == Id);
+  }
+
+  private bool CanSeeJob(int ownerId)
+  {
+    return uid == 0 || ownerId == uid;
+  }
+
 }

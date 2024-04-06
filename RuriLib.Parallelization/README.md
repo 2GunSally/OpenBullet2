@@ -1,7 +1,10 @@
 # RuriLib.Parallelization
-This is a library that can perform multiple tasks (yes, a lot, even infinitely many) that act on some input and return a certain output.
+
+This is a library that can perform multiple tasks (yes, a lot, even infinitely many) that act on some input and return a
+certain output.
 
 Features:
+
 - Fully asynchronous
 - Dynamic degree of parallelism (change it while it runs)
 - Pausing and resuming
@@ -10,9 +13,11 @@ Features:
 - Events
 
 # Installation
+
 [NuGet](https://nuget.org/packages/RuriLib.Parallelization): `dotnet add package RuriLib.Parallelization`
 
 # Example
+
 ```csharp
 using RuriLib.Parallelization;
 using RuriLib.Parallelization.Models;
@@ -74,22 +79,34 @@ namespace ParallelizationDemo
 }
 
 ```
+
 To change the degree of parallelism while it's running, for example to speed up or slow down the work, you can write
+
 ```cs
 await parallelizer.ChangeDegreeOfParallelism(10);
 ```
-You can also pause and resume work. Notice that pausing will wait until all the tasks that are being worked on will end, so it will not have immediate action since there is no support for pausing tasks half-way.
+
+You can also pause and resume work. Notice that pausing will wait until all the tasks that are being worked on will end,
+so it will not have immediate action since there is no support for pausing tasks half-way.
+
 ```cs
 await parallelizer.Pause();
 // Do something
 await parallelizer.Resume();
 ```
-Finally, there are two ways to stop the parallelizer. You can either stop it (which, like pause, waits until all current tasks have ended) or abort it, which will cancel the cancellation token passed to the tasks. You should constantly check if the cancellation token has been cancelled inside your work function.
+
+Finally, there are two ways to stop the parallelizer. You can either stop it (which, like pause, waits until all current
+tasks have ended) or abort it, which will cancel the cancellation token passed to the tasks. You should constantly check
+if the cancellation token has been cancelled inside your work function.
+
 ```cs
 await parallelizer.Stop();
 await parallelizer.Abort();
 ```
-You can check how fast the parallelizer is processing items or how much time is remaining by accessing the corresponding properties
+
+You can check how fast the parallelizer is processing items or how much time is remaining by accessing the corresponding
+properties
+
 ```cs
 Console.WriteLine($"Doing {parallelizer.CPM} checks per minute and the remaining time is {parallelizer.Remaining}");
 ```

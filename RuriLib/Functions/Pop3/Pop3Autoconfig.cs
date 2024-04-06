@@ -2,28 +2,28 @@
 using System.Collections.Generic;
 using System.Xml;
 
-namespace RuriLib.Functions.Pop3
+namespace RuriLib.Functions.Pop3;
+
+public static class Pop3Autoconfig
 {
-    public static class Pop3Autoconfig
+    public static List<HostEntry> Parse(string xml)
     {
-        public static List<HostEntry> Parse(string xml)
+        var doc = new XmlDocument();
+        doc.LoadXml(xml);
+
+        var servers =
+            doc.DocumentElement.SelectNodes("/clientConfig/emailProvider/incomingServer[contains(@type,'pop3')]");
+
+        var hosts = new List<HostEntry>();
+
+        foreach (XmlNode server in servers)
         {
-            var doc = new XmlDocument();
-            doc.LoadXml(xml);
+            var hostname = server.SelectSingleNode("hostname").FirstChild.Value;
+            var port = server.SelectSingleNode("port").FirstChild.Value;
 
-            var servers = doc.DocumentElement.SelectNodes("/clientConfig/emailProvider/incomingServer[contains(@type,'pop3')]");
-
-            var hosts = new List<HostEntry>();
-
-            foreach (XmlNode server in servers)
-            {
-                var hostname = server.SelectSingleNode("hostname").FirstChild.Value;
-                var port = server.SelectSingleNode("port").FirstChild.Value;
-
-                hosts.Add(new HostEntry(hostname, int.Parse(port)));
-            }
-
-            return hosts;
+            hosts.Add(new HostEntry(hostname, int.Parse(port)));
         }
+
+        return hosts;
     }
 }

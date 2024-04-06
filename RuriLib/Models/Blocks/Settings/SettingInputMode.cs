@@ -1,9 +1,8 @@
-﻿namespace RuriLib.Models.Blocks.Settings
+﻿namespace RuriLib.Models.Blocks.Settings;
+
+public enum SettingInputMode
 {
-    public enum SettingInputMode
-    {
-        Variable,
-        Fixed,
-        Interpolated
-    }
+    Variable,
+    Fixed,
+    Interpolated
 }

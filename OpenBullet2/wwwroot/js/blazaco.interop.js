@@ -6,9 +6,8 @@ window.Blazaco.Editor = {
         let thisEditor = monaco.editor.create(document.getElementById(model.id), model.options);
         if (window.Blazaco.Editors.find(e => e.id === model.id)) {
             return false;
-        }
-        else {
-            window.Blazaco.Editors.push({ id: model.id, editor: thisEditor});
+        } else {
+            window.Blazaco.Editors.push({id: model.id, editor: thisEditor});
         }
         return true;
     },

@@ -6,18 +6,18 @@
 
 @if (jobEntity != null && CanSeeJob(jobEntity.Owner == null ? 0 : jobEntity.Owner.Id))
 {
-    <div class="mb-3">
-        @switch (jobOptions)
-        {
-            case MultiRunJobOptions x:
-                <MultiRunOptions Options="x" />
-                break;
+  <div class="mb-3">
+    @switch (jobOptions)
+    {
+      case MultiRunJobOptions x:
+        <MultiRunOptions Options="x"/>
+        break;
 
-            case ProxyCheckJobOptions x:
-                <ProxyCheckOptions Options="x" />
-                break;
-        }
-    </div>
+      case ProxyCheckJobOptions x:
+        <ProxyCheckOptions Options="x"/>
+        break;
+    }
+  </div>
 
-    <button class="btn btn-outline-success" style="margin-bottom: 30px;" @onclick="Edit">@Loc["EditJob"]</button>
+  <button class="btn btn-outline-success" style="margin-bottom: 30px;" @onclick="Edit">@Loc["EditJob"]</button>
 }

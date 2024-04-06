@@ -3,37 +3,34 @@ using OpenBullet2.Services;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpenBullet2.Controllers
+namespace OpenBullet2.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class SharedController : Controller
 {
-    [ApiController, Route("api/[controller]")]
-    public class SharedController : Controller
+    private readonly ConfigSharingService configSharingService;
+
+    public SharedController(ConfigSharingService configSharingService)
     {
-        private readonly ConfigSharingService configSharingService;
+        this.configSharingService = configSharingService;
+    }
 
-        public SharedController(ConfigSharingService configSharingService)
+    [HttpGet("configs/{endpointName}")]
+    public async Task<IActionResult> DownloadConfigs(string endpointName)
+    {
+        try
         {
-            this.configSharingService = configSharingService;
+            var apiKey = Request.Headers["Api-Key"].First();
+            var endpoint = configSharingService.GetEndpoint(endpointName);
+
+            if (!endpoint.ApiKeys.Contains(apiKey)) return Unauthorized();
+
+            return File(await configSharingService.GetArchive(endpointName), "application/octet-stream", "Configs.zip");
         }
-
-        [HttpGet("configs/{endpointName}")]
-        public async Task<IActionResult> DownloadConfigs(string endpointName)
+        catch
         {
-            try
-            {
-                var apiKey = Request.Headers["Api-Key"].First();
-                var endpoint = configSharingService.GetEndpoint(endpointName);
-
-                if (!endpoint.ApiKeys.Contains(apiKey))
-                {
-                    return Unauthorized();
-                }
-
-                return File(await configSharingService.GetArchive(endpointName), "application/octet-stream", $"Configs.zip");
-            }
-            catch
-            {
-                return NotFound();
-            }
+            return NotFound();
         }
     }
 }

@@ -1,10 +1,9 @@
-﻿namespace RuriLib.Functions.Puppeteer
+﻿namespace RuriLib.Functions.Puppeteer;
+
+public enum FindElementBy
 {
-    public enum FindElementBy
-    {
-        Id,
-        Class,
-        Selector,
-        XPath
-    }
+    Id,
+    Class,
+    Selector,
+    XPath
 }

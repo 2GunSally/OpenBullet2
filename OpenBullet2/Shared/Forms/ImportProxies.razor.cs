@@ -10,84 +10,83 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace OpenBullet2.Shared.Forms
+namespace OpenBullet2.Shared.Forms;
+
+public partial class ImportProxies
 {
-    public partial class ImportProxies
+    private bool canImportFile;
+    private string defaultPassword = "";
+    private ProxyType defaultType = ProxyType.Http;
+    private string defaultUsername = "";
+    private string fileContent = "";
+    private readonly string fileName = "";
+
+    private string pasteContent = "";
+    private string url = "";
+    [CascadingParameter] public BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Inject] public IModalService ModalService { get; set; }
+
+    private void ImportFromPaste() => ReturnLines(pasteContent);
+    private void ImportFromFile() => ReturnLines(fileContent);
+
+    private async Task ProcessFile(InputFileChangeEventArgs e)
     {
-        [CascadingParameter] public BlazoredModalInstance BlazoredModal { get; set; }
+        if (e.FileCount == 0)
+            return;
 
-        [Inject] public IModalService ModalService { get; set; }
-
-        private string pasteContent = "";
-        private string fileName = "";
-        private string fileContent = "";
-        private string url = "";
-        private ProxyType defaultType = ProxyType.Http;
-        private string defaultUsername = "";
-        private string defaultPassword = "";
-        private bool canImportFile = false;
-
-        private void ImportFromPaste() => ReturnLines(pasteContent);
-        private void ImportFromFile() => ReturnLines(fileContent);
-
-        private async Task ProcessFile(InputFileChangeEventArgs e)
+        try
         {
-            if (e.FileCount == 0)
-                return;
+            fileContent = "";
 
-            try
+            // Maximum of 10 files per upload
+            foreach (var file in e.GetMultipleFiles())
             {
-                fileContent = "";
-
-                // Maximum of 10 files per upload
-                foreach(var file in e.GetMultipleFiles(10))
-                {
-                    // Maximum 10 MB file upload
-                    using var reader = new StreamReader(file.OpenReadStream(10 * 1000 * 1024));
-                    fileContent += await reader.ReadToEndAsync() + Environment.NewLine;
-                }
-
-                canImportFile = true;
-                await InvokeAsync(StateHasChanged);
+                // Maximum 10 MB file upload
+                using var reader = new StreamReader(file.OpenReadStream(10 * 1000 * 1024));
+                fileContent += await reader.ReadToEndAsync() + Environment.NewLine;
             }
-            catch (Exception ex)
-            {
-                await js.AlertException(ex);
-            }
+
+            canImportFile = true;
+            await InvokeAsync(StateHasChanged);
         }
-
-        private async Task ImportFromUrl()
+        catch (Exception ex)
         {
-            try
-            {
-                using var client = new HttpClient();
-                using var request = new HttpRequestMessage();
-
-                request.RequestUri = new Uri(url);
-                request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36");
-
-                using var response = await client.SendAsync(request);
-                var text = await response.Content.ReadAsStringAsync();
-                ReturnLines(text);
-            }
-            catch (Exception ex)
-            {
-                await js.AlertException(ex);
-            }
+            await js.AlertException(ex);
         }
+    }
 
-        private void ReturnLines(string text)
+    private async Task ImportFromUrl()
+    {
+        try
         {
-            var lines = text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-            var dto = new ProxiesForImportDto
-            {
-                Lines = lines,
-                DefaultType = defaultType,
-                DefaultUsername = defaultUsername,
-                DefaultPassword = defaultPassword
-            };
+            using var client = new HttpClient();
+            using var request = new HttpRequestMessage();
 
-            BlazoredModal.Close(ModalResult.Ok(dto));
+            request.RequestUri = new Uri(url);
+            request.Headers.TryAddWithoutValidation("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36");
+
+            using var response = await client.SendAsync(request);
+            var text = await response.Content.ReadAsStringAsync();
+            ReturnLines(text);
         }
+        catch (Exception ex)
+        {
+            await js.AlertException(ex);
+        }
+    }
+
+    private void ReturnLines(string text)
+    {
+        var lines = text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        var dto = new ProxiesForImportDto {
+            Lines = lines,
+            DefaultType = defaultType,
+            DefaultUsername = defaultUsername,
+            DefaultPassword = defaultPassword
+        };
+
+        BlazoredModal.Close(ModalResult.Ok(dto));
     }
 }

@@ -1,7 +1,6 @@
-﻿namespace RuriLib.Models.Blocks.Settings
+﻿namespace RuriLib.Models.Blocks.Settings;
+
+public class BoolSetting : Setting
 {
-    public class BoolSetting : Setting
-    {
-        public bool Value { get; set; }
-    }
+    public bool Value { get; set; }
 }

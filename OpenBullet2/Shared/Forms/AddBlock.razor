@@ -2,14 +2,15 @@
 @inject IModalService ModalService
 
 <div class="add-block-modal">
-    <AvailableBlocksViewer SelectedDescriptor="SelectedDescriptor" FocusFilterTexbox="true" />
+  <AvailableBlocksViewer SelectedDescriptor="SelectedDescriptor" FocusFilterTexbox="true"/>
 </div>
 
 @code {
-    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
-    
-    private void SelectedDescriptor(BlockDescriptor descriptor)
-    {
-        BlazoredModal.Close(ModalResult.Ok(descriptor));
-    }
+  [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+  private void SelectedDescriptor(BlockDescriptor descriptor)
+  {
+    BlazoredModal.Close(ModalResult.Ok(descriptor));
+  }
+
 }

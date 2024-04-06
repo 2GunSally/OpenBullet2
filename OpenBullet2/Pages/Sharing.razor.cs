@@ -21,232 +21,221 @@ using System.Linq;
 using System.Threading.Tasks;
 using Endpoint = OpenBullet2.Core.Models.Sharing.Endpoint;
 
-namespace OpenBullet2.Pages
+namespace OpenBullet2.Pages;
+
+public partial class Sharing
 {
-    public partial class Sharing
+    private List<Config> configs = new();
+    private CGrid<Config> grid;
+
+    private GridComponent<Config> gridComponent;
+    private Task gridLoad;
+    private Config selectedConfig;
+    private Endpoint selectedEndpoint;
+
+    private string selectedEndpointName = string.Empty;
+    [Inject] private IModalService Modal { get; set; }
+    [Inject] private ConfigSharingService ConfigSharing { get; set; }
+    [Inject] private ConfigService ConfigService { get; set; }
+    [Inject] private VolatileSettingsService VolatileSettings { get; set; }
+
+    protected async override Task OnParametersSetAsync()
     {
-        [Inject] private IModalService Modal { get; set; }
-        [Inject] private ConfigSharingService ConfigSharing { get; set; }
-        [Inject] private ConfigService ConfigService { get; set; }
-        [Inject] private VolatileSettingsService VolatileSettings { get; set; }
+        selectedEndpoint = ConfigSharing.Endpoints.FirstOrDefault();
 
-        private string selectedEndpointName = string.Empty;
-        private Endpoint selectedEndpoint;
-        private List<Config> configs = new();
-        private Config selectedConfig;
+        if (selectedEndpoint != null) selectedEndpointName = selectedEndpoint.Route;
 
-        private GridComponent<Config> gridComponent;
-        private CGrid<Config> grid;
-        private Task gridLoad;
+        configs = selectedEndpoint != null
+            ? ConfigService.Configs.Where(c => selectedEndpoint.ConfigIds.Contains(c.Id)).ToList()
+            : new List<Config>();
 
-        protected override async Task OnParametersSetAsync()
+        Action<IGridColumnCollection<Config>> columns = c =>
         {
-            selectedEndpoint = ConfigSharing.Endpoints.FirstOrDefault();
+            c.Add(x => x.Metadata.Name).Titled(Loc["Name"]).Encoded(false).Sanitized(false)
+                .RenderValueAs(x =>
+                    $"<div class=\"grid-element-with-icon\"><img src=\"data:image/png;base64,{x.Metadata.Base64Image}\"/><span>{x.Metadata.Name}</span></div>");
+            c.Add(x => x.Metadata.Author).Titled(Loc["Author"]);
+            c.Add(x => x.Metadata.Category).Titled(Loc["Category"]);
+            c.Add(x => x.IsRemote).Titled(Loc["Remote"]);
+            c.Add(x => x.Settings.ProxySettings.UseProxies).Titled(Loc["Proxies"]);
+            c.Add(x => x.Metadata.CreationDate).Titled(Loc["CreationDate"]).SetFilterWidgetType("DateTimeLocal")
+                .Format("{0:dd/MM/yyyy HH:mm}");
+            c.Add(x => x.Metadata.LastModified).Titled(Loc["LastModified"]).SetFilterWidgetType("DateTimeLocal")
+                .Format("{0:dd/MM/yyyy HH:mm}")
+                .Sortable(true).SortInitialDirection(GridSortDirection.Descending);
+        };
 
-            if (selectedEndpoint != null)
-            {
-                selectedEndpointName = selectedEndpoint.Route;
-            }
+        var query = new QueryDictionary<StringValues>();
+        query.Add("grid-page", "1");
 
-            configs = selectedEndpoint != null
-                ? ConfigService.Configs.Where(c => selectedEndpoint.ConfigIds.Contains(c.Id)).ToList()
-                : new();
+        var client = new GridClient<Config>(q => GetGridRows(columns, q), query, false, "sharingGrid", columns,
+                CultureInfo.CurrentCulture)
+            .Sortable()
+            .Filterable()
+            .WithMultipleFilters()
+            .SetKeyboard(true)
+            .ChangePageSize(true)
+            .WithGridItemsCount()
+            .Selectable(true, false, false);
+        grid = client.Grid;
 
-            Action<IGridColumnCollection<Config>> columns = c =>
-            {
-                c.Add(x => x.Metadata.Name).Titled(Loc["Name"]).Encoded(false).Sanitized(false)
-                    .RenderValueAs(x => $"<div class=\"grid-element-with-icon\"><img src=\"data:image/png;base64,{x.Metadata.Base64Image}\"/><span>{x.Metadata.Name}</span></div>");
-                c.Add(x => x.Metadata.Author).Titled(Loc["Author"]);
-                c.Add(x => x.Metadata.Category).Titled(Loc["Category"]);
-                c.Add(x => x.IsRemote).Titled(Loc["Remote"]);
-                c.Add(x => x.Settings.ProxySettings.UseProxies).Titled(Loc["Proxies"]);
-                c.Add(x => x.Metadata.CreationDate).Titled(Loc["CreationDate"]).SetFilterWidgetType("DateTimeLocal").Format("{0:dd/MM/yyyy HH:mm}");
-                c.Add(x => x.Metadata.LastModified).Titled(Loc["LastModified"]).SetFilterWidgetType("DateTimeLocal").Format("{0:dd/MM/yyyy HH:mm}")
-                    .Sortable(true).SortInitialDirection(GridSortDirection.Descending);
-            };
+        // Try to set a previous filter
+        if (VolatileSettings.GridQueries.ContainsKey((0, "sharingGrid")))
+            grid.Query = VolatileSettings.GridQueries[(0, "sharingGrid")];
 
-            var query = new QueryDictionary<StringValues>();
-            query.Add("grid-page", "1");
-
-            var client = new GridClient<Config>(q => GetGridRows(columns, q), query, false, "sharingGrid", columns, CultureInfo.CurrentCulture)
-                .Sortable()
-                .Filterable()
-                .WithMultipleFilters()
-                .SetKeyboard(true)
-                .ChangePageSize(true)
-                .WithGridItemsCount()
-                .Selectable(true, false, false);
-            grid = client.Grid;
-
-            // Try to set a previous filter
-            if (VolatileSettings.GridQueries.ContainsKey((0, "sharingGrid")))
-            {
-                grid.Query = VolatileSettings.GridQueries[(0, "sharingGrid")];
-            }
-
-            // Set new items to grid
-            gridLoad = client.UpdateGrid();
-            await gridLoad;
-        }
-
-        private ItemsDTO<Config> GetGridRows(Action<IGridColumnCollection<Config>> columns,
-                QueryDictionary<StringValues> query)
-        {
-            VolatileSettings.GridQueries[(0, "sharingGrid")] = query;
-
-            var server = new GridServer<Config>(configs, new QueryCollection(query),
-                true, "sharingGrid", columns, 15).Sortable().Filterable().WithMultipleFilters();
-
-            // Return items to displays
-            return server.ItemsToDisplay;
-        }
-
-        private async Task RefreshList()
-        {
-            configs = selectedEndpoint != null
-                ? ConfigService.Configs.Where(c => selectedEndpoint.ConfigIds.Contains(c.Id)).ToList()
-                : new();
-
-            await gridComponent.UpdateGrid();
-            StateHasChanged();
-        }
-
-        private async Task OnEndpointSelected(string name)
-        {
-            selectedEndpointName = name;
-            selectedEndpoint = ConfigSharing.Endpoints.First(e => e.Route == name);
-            await RefreshList();
-        }
-
-        private void OnConfigSelected(object item)
-        {
-            if (item.GetType() == typeof(Config))
-            {
-                selectedConfig = (Config)item;
-            }
-        }
-
-        private async Task CreateEndpoint()
-        {
-            var modal = Modal.Show<EndpointCreate>(Loc["CreateEndpoint"]);
-            var result = await modal.Result;
-
-            if (!result.Cancelled)
-            {
-                selectedEndpoint = result.Data as Endpoint;
-                selectedEndpointName = selectedEndpoint.Route;
-                ConfigSharing.Endpoints.Add(selectedEndpoint);
-                ConfigSharing.Save();
-                await js.AlertSuccess(Loc["Created"], Loc["EndpointCreated"]);
-                await RefreshList();
-            }
-        }
-
-        private async Task EditEndpoint()
-        {
-            if (selectedEndpoint == null)
-            {
-                await ShowNoEndpointSelectedWarning();
-                return;
-            }
-
-            var parameters = new ModalParameters();
-            parameters.Add(nameof(EndpointEdit.Endpoint), selectedEndpoint);
-
-            var modal = Modal.Show<EndpointEdit>(Loc["EditEndpoint"], parameters);
-            await modal.Result;
-            ConfigSharing.Save();
-            await RefreshList();
-        }
-
-        private async Task DeleteEndpoint()
-        {
-            if (selectedEndpoint == null)
-            {
-                await ShowNoEndpointSelectedWarning();
-                return;
-            }
-
-            if (await js.Confirm(Loc["AreYouSure"], $"{Loc["ReallyDelete"]} {selectedEndpoint.Route}?"))
-            {
-                ConfigSharing.Endpoints.Remove(selectedEndpoint);
-                ConfigSharing.Save();
-
-                selectedEndpoint = ConfigSharing.Endpoints.FirstOrDefault();
-                if (selectedEndpoint != null)
-                {
-                    selectedEndpointName = selectedEndpoint.Route;
-                }
-
-                await RefreshList();
-            }
-        }
-
-        private async Task AddConfig()
-        {
-            if (selectedEndpoint == null)
-            {
-                await ShowNoEndpointSelectedWarning();
-                return;
-            }
-
-            var modal = Modal.Show<ConfigSelector>(Loc["SelectConfig"]);
-            var result = await modal.Result;
-
-            if (!result.Cancelled)
-            {
-                var config = result.Data as Config;
-                
-                if (config.IsRemote)
-                {
-                    await js.AlertError(Loc["RemoteConfig"], Loc["CannotShareRemoteConfig"]);
-                    return;
-                }
-
-                if (!selectedEndpoint.ConfigIds.Contains(config.Id))
-                {
-                    selectedEndpoint.ConfigIds.Add(config.Id);
-                }
-                ConfigSharing.Save();
-                await RefreshList();
-            }
-        }
-
-        private async Task RemoveConfig()
-        {
-            if (selectedConfig == null)
-            {
-                await ShowNoConfigSelectedWarning();
-                return;
-            }
-
-            selectedEndpoint.ConfigIds.Remove(selectedConfig.Id);
-            ConfigSharing.Save();
-
-            await RefreshList();
-            await js.AlertSuccess(Loc["Removed"], Loc["ConfigRemovedSuccessfully"]);
-        }
-
-        private async Task RemoveAllConfigs()
-        {
-            if (selectedEndpoint == null)
-            {
-                await ShowNoEndpointSelectedWarning();
-                return;
-            }
-
-            var count = selectedEndpoint.ConfigIds.Count;
-            selectedEndpoint.ConfigIds.Clear();
-            ConfigSharing.Save();
-            
-            await RefreshList();
-            await js.AlertSuccess(Loc["Removed"], $"{Loc["ConfigsRemovedSuccessfully"]}: {count}");
-        }
-
-        private async Task ShowNoEndpointSelectedWarning()
-            => await js.AlertError(Loc["Uh-Oh"], Loc["NoEndpointSelected"]);
-
-        private async Task ShowNoConfigSelectedWarning()
-            => await js.AlertError(Loc["Uh-Oh"], Loc["NoConfigSelected"]);
+        // Set new items to grid
+        gridLoad = client.UpdateGrid();
+        await gridLoad;
     }
+
+    private ItemsDTO<Config> GetGridRows(Action<IGridColumnCollection<Config>> columns,
+        QueryDictionary<StringValues> query)
+    {
+        VolatileSettings.GridQueries[(0, "sharingGrid")] = query;
+
+        var server = new GridServer<Config>(configs, new QueryCollection(query),
+            true, "sharingGrid", columns, 15).Sortable().Filterable().WithMultipleFilters();
+
+        // Return items to displays
+        return server.ItemsToDisplay;
+    }
+
+    private async Task RefreshList()
+    {
+        configs = selectedEndpoint != null
+            ? ConfigService.Configs.Where(c => selectedEndpoint.ConfigIds.Contains(c.Id)).ToList()
+            : new List<Config>();
+
+        await gridComponent.UpdateGrid();
+        StateHasChanged();
+    }
+
+    private async Task OnEndpointSelected(string name)
+    {
+        selectedEndpointName = name;
+        selectedEndpoint = ConfigSharing.Endpoints.First(e => e.Route == name);
+        await RefreshList();
+    }
+
+    private void OnConfigSelected(object item)
+    {
+        if (item.GetType() == typeof(Config)) selectedConfig = (Config)item;
+    }
+
+    private async Task CreateEndpoint()
+    {
+        var modal = Modal.Show<EndpointCreate>(Loc["CreateEndpoint"]);
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+            selectedEndpoint = result.Data as Endpoint;
+            selectedEndpointName = selectedEndpoint.Route;
+            ConfigSharing.Endpoints.Add(selectedEndpoint);
+            ConfigSharing.Save();
+            await js.AlertSuccess(Loc["Created"], Loc["EndpointCreated"]);
+            await RefreshList();
+        }
+    }
+
+    private async Task EditEndpoint()
+    {
+        if (selectedEndpoint == null)
+        {
+            await ShowNoEndpointSelectedWarning();
+            return;
+        }
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(EndpointEdit.Endpoint), selectedEndpoint);
+
+        var modal = Modal.Show<EndpointEdit>(Loc["EditEndpoint"], parameters);
+        await modal.Result;
+        ConfigSharing.Save();
+        await RefreshList();
+    }
+
+    private async Task DeleteEndpoint()
+    {
+        if (selectedEndpoint == null)
+        {
+            await ShowNoEndpointSelectedWarning();
+            return;
+        }
+
+        if (await js.Confirm(Loc["AreYouSure"], $"{Loc["ReallyDelete"]} {selectedEndpoint.Route}?"))
+        {
+            ConfigSharing.Endpoints.Remove(selectedEndpoint);
+            ConfigSharing.Save();
+
+            selectedEndpoint = ConfigSharing.Endpoints.FirstOrDefault();
+            if (selectedEndpoint != null) selectedEndpointName = selectedEndpoint.Route;
+
+            await RefreshList();
+        }
+    }
+
+    private async Task AddConfig()
+    {
+        if (selectedEndpoint == null)
+        {
+            await ShowNoEndpointSelectedWarning();
+            return;
+        }
+
+        var modal = Modal.Show<ConfigSelector>(Loc["SelectConfig"]);
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+            var config = result.Data as Config;
+
+            if (config.IsRemote)
+            {
+                await js.AlertError(Loc["RemoteConfig"], Loc["CannotShareRemoteConfig"]);
+                return;
+            }
+
+            if (!selectedEndpoint.ConfigIds.Contains(config.Id)) selectedEndpoint.ConfigIds.Add(config.Id);
+            ConfigSharing.Save();
+            await RefreshList();
+        }
+    }
+
+    private async Task RemoveConfig()
+    {
+        if (selectedConfig == null)
+        {
+            await ShowNoConfigSelectedWarning();
+            return;
+        }
+
+        selectedEndpoint.ConfigIds.Remove(selectedConfig.Id);
+        ConfigSharing.Save();
+
+        await RefreshList();
+        await js.AlertSuccess(Loc["Removed"], Loc["ConfigRemovedSuccessfully"]);
+    }
+
+    private async Task RemoveAllConfigs()
+    {
+        if (selectedEndpoint == null)
+        {
+            await ShowNoEndpointSelectedWarning();
+            return;
+        }
+
+        var count = selectedEndpoint.ConfigIds.Count;
+        selectedEndpoint.ConfigIds.Clear();
+        ConfigSharing.Save();
+
+        await RefreshList();
+        await js.AlertSuccess(Loc["Removed"], $"{Loc["ConfigsRemovedSuccessfully"]}: {count}");
+    }
+
+    private async Task ShowNoEndpointSelectedWarning()
+        => await js.AlertError(Loc["Uh-Oh"], Loc["NoEndpointSelected"]);
+
+    private async Task ShowNoConfigSelectedWarning()
+        => await js.AlertError(Loc["Uh-Oh"], Loc["NoConfigSelected"]);
 }

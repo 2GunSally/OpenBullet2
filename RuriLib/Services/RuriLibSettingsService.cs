@@ -6,70 +6,65 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RuriLib.Services
+namespace RuriLib.Services;
+
+public class RuriLibSettingsService
 {
-    public class RuriLibSettingsService
+    private readonly JsonSerializerSettings jsonSettings;
+
+    public RuriLibSettingsService(string baseFolder)
     {
-        private readonly JsonSerializerSettings jsonSettings;
-        private string BaseFolder { get; init; }
-        private string EnvFile => Path.Combine(BaseFolder, "Environment.ini");
-        private string RlSettFile => Path.Combine(BaseFolder, "RuriLibSettings.json");
+        BaseFolder = baseFolder;
+        Directory.CreateDirectory(baseFolder);
 
-        public EnvironmentSettings Environment { get; set; }
-        public GlobalSettings RuriLibSettings { get; set; }
+        jsonSettings =
+            new JsonSerializerSettings { Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto };
 
-        public RuriLibSettingsService(string baseFolder)
-        {
-            BaseFolder = baseFolder;
-            Directory.CreateDirectory(baseFolder);
+        if (!File.Exists(EnvFile)) File.WriteAllText(EnvFile, GetDefaultEnvironment());
 
-            jsonSettings = new JsonSerializerSettings 
-            { 
-                Formatting = Formatting.Indented,
-                TypeNameHandling = TypeNameHandling.Auto
-            };
+        Environment = EnvironmentSettings.FromIni(EnvFile);
 
-            if (!File.Exists(EnvFile))
-            {
-                File.WriteAllText(EnvFile, GetDefaultEnvironment());
-            }
+        RuriLibSettings = File.Exists(RlSettFile)
+            ? JsonConvert.DeserializeObject<GlobalSettings>(File.ReadAllText(RlSettFile), jsonSettings)
+            : CreateGlobalSettings();
+    }
 
-            Environment = EnvironmentSettings.FromIni(EnvFile);
+    private string BaseFolder { get; }
+    private string EnvFile => Path.Combine(BaseFolder, "Environment.ini");
+    private string RlSettFile => Path.Combine(BaseFolder, "RuriLibSettings.json");
 
-            RuriLibSettings = File.Exists(RlSettFile)
-                ? JsonConvert.DeserializeObject<GlobalSettings>(File.ReadAllText(RlSettFile), jsonSettings)
-                : CreateGlobalSettings();
-        }
+    public EnvironmentSettings Environment { get; set; }
+    public GlobalSettings RuriLibSettings { get; set; }
 
-        /// <summary>
-        /// Saves the settings to the designated file.
-        /// </summary>
-        public Task Save()
-            => File.WriteAllTextAsync(RlSettFile, JsonConvert.SerializeObject(RuriLibSettings, jsonSettings));
+    /// <summary>
+    ///     Saves the settings to the designated file.
+    /// </summary>
+    public Task Save()
+        => File.WriteAllTextAsync(RlSettFile, JsonConvert.SerializeObject(RuriLibSettings, jsonSettings));
 
-        /// <summary>
-        /// Gets the currently supported statuses (including the custom ones defined in the Environment settings).
-        /// </summary>
-        public string[] GetStatuses()
-            => (new string[] { "SUCCESS", "NONE", "FAIL", "RETRY", "BAN", "ERROR" })
+    /// <summary>
+    ///     Gets the currently supported statuses (including the custom ones defined in the Environment settings).
+    /// </summary>
+    public string[] GetStatuses()
+        => new[] { "SUCCESS", "NONE", "FAIL", "RETRY", "BAN", "ERROR" }
             .Concat(Environment.CustomStatuses.Select(s => s.Name)).ToArray();
 
-        private GlobalSettings CreateGlobalSettings()
+    private GlobalSettings CreateGlobalSettings()
+    {
+        var settings = new GlobalSettings();
+
+        if (Utils.IsDocker())
         {
-            var settings = new GlobalSettings();
-
-            if (Utils.IsDocker())
-            {
-                settings.PuppeteerSettings.ChromeBinaryLocation = "/usr/bin/chromium";
-                settings.SeleniumSettings.ChromeBinaryLocation = "/usr/bin/chromium";
-                settings.SeleniumSettings.FirefoxBinaryLocation = "/usr/bin/firefox";
-            }
-
-            return settings;
+            settings.PuppeteerSettings.ChromeBinaryLocation = "/usr/bin/chromium";
+            settings.SeleniumSettings.ChromeBinaryLocation = "/usr/bin/chromium";
+            settings.SeleniumSettings.FirefoxBinaryLocation = "/usr/bin/firefox";
         }
 
-        private string GetDefaultEnvironment() => 
-@"[WORDLIST TYPE]
+        return settings;
+    }
+
+    private string GetDefaultEnvironment() =>
+        @"[WORDLIST TYPE]
 Name=Default
 Regex=^.*$
 Verify=False
@@ -118,5 +113,4 @@ Format=<DATA>:<PROXY>:<CAPTURE>
 [EXPORT FORMAT]
 Format=<DATA>\t<PROXY>\t<CAPTURE>\t
 ";
-    }
 }

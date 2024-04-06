@@ -1,10 +1,9 @@
-﻿namespace RuriLib.Functions.Imap
+﻿namespace RuriLib.Functions.Imap;
+
+public enum SearchField
 {
-    public enum SearchField
-    {
-        From,
-        To,
-        Subject,
-        Body
-    }
+    From,
+    To,
+    Subject,
+    Body
 }

@@ -55,7 +55,7 @@ function playHitSound() {
     document.getElementById('hit-sound').play();
 }
 
-function focusElement (id) {
+function focusElement(id) {
     const element = document.getElementById(id);
     element.focus();
 }

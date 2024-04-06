@@ -10,240 +10,232 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RuriLib.Helpers
+namespace RuriLib.Helpers;
+
+/// <summary>
+///     Takes care of packing and unpacking <see cref="Config" /> objects.
+/// </summary>
+public static class ConfigPacker
 {
+    private static readonly JsonSerializerSettings jsonSettings = new() {
+        TypeNameHandling = TypeNameHandling.Auto, Formatting = Formatting.Indented
+    };
+
     /// <summary>
-    /// Takes care of packing and unpacking <see cref="Config"/> objects.
+    ///     Packs the <paramref name="config" /> and returns the bytes of the resulting archive.
     /// </summary>
-    public static class ConfigPacker
+    public static async Task<byte[]> Pack(Config config)
     {
-        private static readonly JsonSerializerSettings jsonSettings = new JsonSerializerSettings
+        using var packageStream = new MemoryStream();
+        using (var archive = new ZipArchive(packageStream, ZipArchiveMode.Create, false))
         {
-            TypeNameHandling = TypeNameHandling.Auto,
-            Formatting = Formatting.Indented
-        };
+            await CreateZipEntryFromString(archive, "readme.md", config.Readme);
+            await CreateZipEntryFromString(archive, "metadata.json",
+                JsonConvert.SerializeObject(config.Metadata, jsonSettings));
+            await CreateZipEntryFromString(archive, "settings.json",
+                JsonConvert.SerializeObject(config.Settings, jsonSettings));
 
-        /// <summary>
-        /// Packs the <paramref name="config"/> and returns the bytes of the resulting archive.
-        /// </summary>
-        public static async Task<byte[]> Pack(Config config)
-        {
-            using var packageStream = new MemoryStream();
-            using (var archive = new ZipArchive(packageStream, ZipArchiveMode.Create, false))
+            switch (config.Mode)
             {
-                await CreateZipEntryFromString(archive, "readme.md", config.Readme);
-                await CreateZipEntryFromString(archive, "metadata.json", JsonConvert.SerializeObject(config.Metadata, jsonSettings));
-                await CreateZipEntryFromString(archive, "settings.json", JsonConvert.SerializeObject(config.Settings, jsonSettings));
+                case ConfigMode.Stack:
+                    config.LoliCodeScript = Stack2LoliTranspiler.Transpile(config.Stack);
+                    await CreateZipEntryFromString(archive, "script.loli", config.LoliCodeScript);
+                    await CreateZipEntryFromString(archive, "startup.loli", config.StartupLoliCodeScript);
+                    break;
 
-                switch (config.Mode)
-                {
-                    case ConfigMode.Stack:
-                        config.LoliCodeScript = Stack2LoliTranspiler.Transpile(config.Stack);
-                        await CreateZipEntryFromString(archive, "script.loli", config.LoliCodeScript);
-                        await CreateZipEntryFromString(archive, "startup.loli", config.StartupLoliCodeScript);
-                        break;
+                case ConfigMode.LoliCode:
+                    await CreateZipEntryFromString(archive, "script.loli", config.LoliCodeScript);
+                    await CreateZipEntryFromString(archive, "startup.loli", config.StartupLoliCodeScript);
+                    break;
 
-                    case ConfigMode.LoliCode:
-                        await CreateZipEntryFromString(archive, "script.loli", config.LoliCodeScript);
-                        await CreateZipEntryFromString(archive, "startup.loli", config.StartupLoliCodeScript);
-                        break;
+                case ConfigMode.CSharp:
+                    await CreateZipEntryFromString(archive, "script.cs", config.CSharpScript);
+                    await CreateZipEntryFromString(archive, "startup.cs", config.StartupCSharpScript);
+                    break;
 
-                    case ConfigMode.CSharp:
-                        await CreateZipEntryFromString(archive, "script.cs", config.CSharpScript);
-                        await CreateZipEntryFromString(archive, "startup.cs", config.StartupCSharpScript);
-                        break;
+                case ConfigMode.DLL:
+                    await CreateZipEntryFromBytes(archive, "build.dll", config.DLLBytes);
+                    break;
 
-                    case ConfigMode.DLL:
-                        await CreateZipEntryFromBytes(archive, "build.dll", config.DLLBytes);
-                        break;
+                case ConfigMode.Legacy:
+                    await CreateZipEntryFromString(archive, "script.legacy", config.LoliScript);
+                    break;
 
-                    case ConfigMode.Legacy:
-                        await CreateZipEntryFromString(archive, "script.legacy", config.LoliScript);
-                        break;
-
-                    default:
-                        throw new NotSupportedException();
-                }
+                default:
+                    throw new NotSupportedException();
             }
-
-            config.UpdateHashes();
-            return packageStream.ToArray();
         }
 
-        /// <summary>
-        /// Packs multiple <paramref name="configs"/> into a single archive.
-        /// </summary>
-        public static async Task<byte[]> Pack(IEnumerable<Config> configs)
-        {
-            // Use a dictionary to keep track of filenames and avoid duplicates
-            var fileNames = new Dictionary<string, int>();
+        config.UpdateHashes();
+        return packageStream.ToArray();
+    }
 
-            using var packageStream = new MemoryStream();
-            using (var archive = new ZipArchive(packageStream, ZipArchiveMode.Create, false))
+    /// <summary>
+    ///     Packs multiple <paramref name="configs" /> into a single archive.
+    /// </summary>
+    public static async Task<byte[]> Pack(IEnumerable<Config> configs)
+    {
+        // Use a dictionary to keep track of filenames and avoid duplicates
+        var fileNames = new Dictionary<string, int>();
+
+        using var packageStream = new MemoryStream();
+        using (var archive = new ZipArchive(packageStream, ZipArchiveMode.Create, false))
+            foreach (var config in configs)
             {
-                foreach (var config in configs)
-                {
-                    var fileName = config.Metadata.Name.ToValidFileName();
+                var fileName = config.Metadata.Name.ToValidFileName();
 
-                    // If a config with the same filename was already added, append a number
-                    // and increase it for the next round
-                    if (fileNames.ContainsKey(fileName))
-                    {
-                        fileNames[fileName]++;
-                        fileName += fileNames[fileName];
-                    }
-                    // Otherwise create a new entry in the dictionary
-                    else
-                    {
-                        fileNames[fileName] = 1;
-                    }
-
-                    var packedConfig = await Pack(config);
-                    await CreateZipEntryFromBytes(archive, fileName + ".opk", packedConfig);
-                }
-            }
-
-            return packageStream.ToArray();
-        }
-
-        /// <summary>
-        /// Unpacks a <paramref name="stream"/> to a Config.
-        /// </summary>
-        public static Task<Config> Unpack(Stream stream)
-        {
-            var config = new Config();
-
-            using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, false))
-            {
-                // readme.md (not essential)
-                try
+                // If a config with the same filename was already added, append a number
+                // and increase it for the next round
+                if (fileNames.ContainsKey(fileName))
                 {
-                    config.Readme = ReadStringFromZipEntry(archive, "readme.md");
+                    fileNames[fileName]++;
+                    fileName += fileNames[fileName];
                 }
-                catch
-                {
-                    Console.WriteLine($"Could not read readme.md in config with id {config.Id}");
-                }
-
-                // metadata.json
-                try
-                {
-                    config.Metadata = JsonConvert.DeserializeObject<ConfigMetadata>(ReadStringFromZipEntry(archive, "metadata.json"), jsonSettings);
-                }
-                catch
-                {
-                    throw new FileNotFoundException("File not found inside the opk archive", "metadata.json");
-                }
-
-                // settings.json
-                try
-                {
-                    config.Settings = JsonConvert.DeserializeObject<ConfigSettings>(ReadStringFromZipEntry(archive, "settings.json"), jsonSettings);
-                }
-                catch
-                {
-                    throw new FileNotFoundException("File not found inside the opk archive", "settings.json");
-                }
-                
-                if (archive.Entries.Any(e => e.Name.Contains("script.cs")))
-                {
-                    // script.cs
-                    try
-                    {
-                        config.CSharpScript = ReadStringFromZipEntry(archive, "script.cs");
-                        config.Mode = ConfigMode.CSharp;
-                    }
-                    catch
-                    {
-                        throw new FileLoadException("Could not load the file from the opk archive", "script.cs");
-                    }
-
-                    // startup.cs
-                    config.StartupCSharpScript = ReadStringFromZipEntry(archive, "startup.cs", essential: false);
-                }
-                else if (archive.Entries.Any(e => e.Name.Contains("build.dll")))
-                {
-                    // build.dll
-                    try
-                    {
-                        config.DLLBytes = ReadBytesFromZipEntry(archive, "build.dll");
-                        config.Mode = ConfigMode.DLL;
-                    }
-                    catch
-                    {
-                        throw new FileLoadException("Could not load the file from the opk archive", "build.dll");
-                    }
-                }
-                else if (archive.Entries.Any(e => e.Name.Contains("script.legacy")))
-                {
-                    // script.legacy
-                    try
-                    {
-                        config.LoliScript = ReadStringFromZipEntry(archive, "script.legacy");
-                        config.Mode = ConfigMode.Legacy;
-                    }
-                    catch
-                    {
-                        throw new FileLoadException("Could not load the file from the opk archive", "script.legacy");
-                    }
-                }
+                // Otherwise create a new entry in the dictionary
                 else
-                {
-                    // script.loli
-                    try
-                    {
-                        config.LoliCodeScript = ReadStringFromZipEntry(archive, "script.loli");
-                        config.Mode = ConfigMode.LoliCode;
-                    }
-                    catch
-                    {
-                        throw new FileLoadException("Could not load the file from the opk archive", "script.loli");
-                    }
+                    fileNames[fileName] = 1;
 
-                    // startup.loli
-                    config.StartupLoliCodeScript = ReadStringFromZipEntry(archive, "startup.loli", essential: false);
-                }
+                var packedConfig = await Pack(config);
+                await CreateZipEntryFromBytes(archive, fileName + ".opk", packedConfig);
             }
 
-            config.UpdateHashes();
-            return Task.FromResult(config);
-        }
+        return packageStream.ToArray();
+    }
 
-        private static async Task CreateZipEntryFromString(ZipArchive archive, string path, string content)
+    /// <summary>
+    ///     Unpacks a <paramref name="stream" /> to a Config.
+    /// </summary>
+    public static Task<Config> Unpack(Stream stream)
+    {
+        var config = new Config();
+
+        using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, false))
         {
-            var zipFile = archive.CreateEntry(path);
-
-            using var sourceFileStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            await using var zipEntryStream = zipFile.Open();
-            await sourceFileStream.CopyToAsync(zipEntryStream);
-        }
-
-        private static async Task CreateZipEntryFromBytes(ZipArchive archive, string path, byte[] content)
-        {
-            var zipFile = archive.CreateEntry(path);
-
-            using var sourceFileStream = new MemoryStream(content);
-            await using var zipEntryStream = zipFile.Open();
-            await sourceFileStream.CopyToAsync(zipEntryStream);
-        }
-
-        private static string ReadStringFromZipEntry(ZipArchive archive, string path, bool essential = true)
-            => Encoding.UTF8.GetString(ReadBytesFromZipEntry(archive, path, essential));
-
-        private static byte[] ReadBytesFromZipEntry(ZipArchive archive, string path, bool essential = true)
-        {
-            var entry = archive.GetEntry(path);
-
-            if (entry is null && !essential)
+            // readme.md (not essential)
+            try
             {
-                return Array.Empty<byte>();
+                config.Readme = ReadStringFromZipEntry(archive, "readme.md");
+            }
+            catch
+            {
+                Console.WriteLine($"Could not read readme.md in config with id {config.Id}");
             }
 
-            using var stream = entry.Open();
-            using var ms = new MemoryStream();
+            // metadata.json
+            try
+            {
+                config.Metadata =
+                    JsonConvert.DeserializeObject<ConfigMetadata>(ReadStringFromZipEntry(archive, "metadata.json"),
+                        jsonSettings);
+            }
+            catch
+            {
+                throw new FileNotFoundException("File not found inside the opk archive", "metadata.json");
+            }
 
-            stream.CopyTo(ms);
-            return ms.ToArray();
+            // settings.json
+            try
+            {
+                config.Settings =
+                    JsonConvert.DeserializeObject<ConfigSettings>(ReadStringFromZipEntry(archive, "settings.json"),
+                        jsonSettings);
+            }
+            catch
+            {
+                throw new FileNotFoundException("File not found inside the opk archive", "settings.json");
+            }
+
+            if (archive.Entries.Any(e => e.Name.Contains("script.cs")))
+            {
+                // script.cs
+                try
+                {
+                    config.CSharpScript = ReadStringFromZipEntry(archive, "script.cs");
+                    config.Mode = ConfigMode.CSharp;
+                }
+                catch
+                {
+                    throw new FileLoadException("Could not load the file from the opk archive", "script.cs");
+                }
+
+                // startup.cs
+                config.StartupCSharpScript = ReadStringFromZipEntry(archive, "startup.cs", false);
+            }
+            else if (archive.Entries.Any(e => e.Name.Contains("build.dll")))
+                // build.dll
+                try
+                {
+                    config.DLLBytes = ReadBytesFromZipEntry(archive, "build.dll");
+                    config.Mode = ConfigMode.DLL;
+                }
+                catch
+                {
+                    throw new FileLoadException("Could not load the file from the opk archive", "build.dll");
+                }
+            else if (archive.Entries.Any(e => e.Name.Contains("script.legacy")))
+                // script.legacy
+                try
+                {
+                    config.LoliScript = ReadStringFromZipEntry(archive, "script.legacy");
+                    config.Mode = ConfigMode.Legacy;
+                }
+                catch
+                {
+                    throw new FileLoadException("Could not load the file from the opk archive", "script.legacy");
+                }
+            else
+            {
+                // script.loli
+                try
+                {
+                    config.LoliCodeScript = ReadStringFromZipEntry(archive, "script.loli");
+                    config.Mode = ConfigMode.LoliCode;
+                }
+                catch
+                {
+                    throw new FileLoadException("Could not load the file from the opk archive", "script.loli");
+                }
+
+                // startup.loli
+                config.StartupLoliCodeScript = ReadStringFromZipEntry(archive, "startup.loli", false);
+            }
         }
+
+        config.UpdateHashes();
+        return Task.FromResult(config);
+    }
+
+    private static async Task CreateZipEntryFromString(ZipArchive archive, string path, string content)
+    {
+        var zipFile = archive.CreateEntry(path);
+
+        using var sourceFileStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+        await using var zipEntryStream = zipFile.Open();
+        await sourceFileStream.CopyToAsync(zipEntryStream);
+    }
+
+    private static async Task CreateZipEntryFromBytes(ZipArchive archive, string path, byte[] content)
+    {
+        var zipFile = archive.CreateEntry(path);
+
+        using var sourceFileStream = new MemoryStream(content);
+        await using var zipEntryStream = zipFile.Open();
+        await sourceFileStream.CopyToAsync(zipEntryStream);
+    }
+
+    private static string ReadStringFromZipEntry(ZipArchive archive, string path, bool essential = true)
+        => Encoding.UTF8.GetString(ReadBytesFromZipEntry(archive, path, essential));
+
+    private static byte[] ReadBytesFromZipEntry(ZipArchive archive, string path, bool essential = true)
+    {
+        var entry = archive.GetEntry(path);
+
+        if (entry is null && !essential) return Array.Empty<byte>();
+
+        using var stream = entry.Open();
+        using var ms = new MemoryStream();
+
+        stream.CopyTo(ms);
+        return ms.ToArray();
     }
 }

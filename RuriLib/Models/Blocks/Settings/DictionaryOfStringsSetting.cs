@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace RuriLib.Models.Blocks.Settings
+namespace RuriLib.Models.Blocks.Settings;
+
+public class DictionaryOfStringsSetting : Setting
 {
-    public class DictionaryOfStringsSetting : Setting
-    {
-        public Dictionary<string, string> Value { get; set; }
-    }
+    public Dictionary<string, string> Value { get; set; }
 }
