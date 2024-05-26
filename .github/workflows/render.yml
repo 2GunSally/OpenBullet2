@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: OB2
+    env: docker
+    repo: https://github.com/2GunSally/OpenBullet2.git
+    region: oregon
+    plan: free
