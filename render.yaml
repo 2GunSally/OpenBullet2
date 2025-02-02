@@ -3,5 +3,5 @@ services:
     name: OB2
     env: docker
     repo: https://github.com/2GunSally/OpenBullet2.git
-    region: nevada
+    region: oregon
     plan: free
